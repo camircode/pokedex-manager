@@ -41,7 +41,7 @@ Requisitos para trabajar sin Docker:
 
 | Herramienta | Versión mínima |
 | --- | --- |
-| Node.js | 22.12.0 |
+| Node.js | 22.13.0 |
 | pnpm | 11.20.0 |
 | MongoDB | 7.0 |
 
