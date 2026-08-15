@@ -41,6 +41,6 @@ describe('scan image validation', () => {
         bytes: new Uint8Array(MAX_SCAN_IMAGE_BYTES + 1),
         declaredMediaType: 'image/png',
       }),
-    ).toThrow(/5 MB/i)
+    ).toThrow(/preparar para el análisis/i)
   })
 })

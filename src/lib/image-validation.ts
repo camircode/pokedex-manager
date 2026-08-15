@@ -62,7 +62,9 @@ export function validateScanImage(input: {
     throw new ImageValidationError('Selecciona una imagen con contenido.')
   }
   if (input.bytes.byteLength > MAX_SCAN_IMAGE_BYTES) {
-    throw new ImageValidationError('La imagen no puede superar 5 MB.')
+    throw new ImageValidationError(
+      'La imagen no se pudo preparar para el análisis.',
+    )
   }
   if (
     !SCAN_IMAGE_MEDIA_TYPES.includes(

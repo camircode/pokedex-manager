@@ -5,7 +5,8 @@ import { AiProcess, type AiProcessStep } from '@/components/ai-process'
 import { ErrorState } from '@/components/status'
 import { pokemonTypeLabel } from '@/lib/catalog-query'
 import { consumeEventStream } from '@/lib/event-stream'
-import { MAX_SCAN_IMAGE_BYTES, validateScanImage } from '@/lib/image-validation'
+import { optimizeScanImage } from '@/lib/image-optimization'
+import { validateScanImage } from '@/lib/image-validation'
 import { apiMutation, displayName } from '@/lib/ui'
 import type { RecognitionStreamEvent } from '@/routes/api/ai/recognize'
 import type { RecognitionCandidate } from '@/server/card-recognition'
@@ -27,6 +28,7 @@ function Scan() {
   const [candidate, setCandidate] = useState<RecognitionCandidate>()
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
+  const [preparingImage, setPreparingImage] = useState(false)
   const [loading, setLoading] = useState(false)
   const [adding, setAdding] = useState(false)
   const [processPhases, setProcessPhases] = useState<string[]>([])
@@ -54,16 +56,20 @@ function Scan() {
     setProcessStartedAt(null)
     setProcessPhases([])
     if (selected === undefined) return
+    setPreparingImage(true)
     try {
+      const prepared = await optimizeScanImage(selected)
       validateScanImage({
-        bytes: new Uint8Array(await selected.arrayBuffer()),
-        declaredMediaType: selected.type,
+        bytes: new Uint8Array(await prepared.arrayBuffer()),
+        declaredMediaType: prepared.type,
       })
-      setFile(selected)
+      setFile(prepared)
     } catch (caught) {
       setError(
         caught instanceof Error ? caught.message : 'La imagen no es válida.',
       )
+    } finally {
+      setPreparingImage(false)
     }
   }
 
@@ -168,6 +174,7 @@ function Scan() {
               <button
                 type="button"
                 className="button secondary"
+                disabled={preparingImage}
                 onClick={() => cameraInput.current?.click()}
               >
                 <i className="hn hn-camera" aria-hidden="true" />
@@ -176,6 +183,7 @@ function Scan() {
               <button
                 type="button"
                 className="button secondary"
+                disabled={preparingImage}
                 onClick={() => fileInput.current?.click()}
               >
                 Elegir archivo
@@ -196,9 +204,10 @@ function Scan() {
               accept="image/png,image/jpeg,image/webp"
               onChange={handleImageInput}
             />
-            <small id="scan-image-help">
-              PNG, JPEG o WebP, hasta {MAX_SCAN_IMAGE_BYTES / 1024 / 1024} MB.
-              El contenido del archivo se verifica antes de enviarlo.
+            <small id="scan-image-help" role="status">
+              {preparingImage
+                ? 'Preparando la imagen…'
+                : 'La aplicación ajusta y verifica la imagen antes de enviarla.'}
             </small>
           </fieldset>
 
