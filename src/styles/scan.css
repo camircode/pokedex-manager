@@ -1,0 +1,125 @@
+.scan-workbench {
+  display: grid;
+  grid-template-columns: minmax(18rem, 0.9fr) minmax(18rem, 1.1fr);
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid var(--line-strong);
+}
+.scan-form {
+  display: grid;
+  align-content: start;
+  gap: 1.5rem;
+  padding: 2rem 2rem 2rem 0;
+  border-right: 1px solid var(--line);
+}
+.scan-form fieldset {
+  min-width: 0;
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.scan-form legend {
+  margin-bottom: 1rem;
+  padding: 0;
+  font-size: 1rem;
+  font-weight: 800;
+}
+.scan-form small {
+  display: block;
+  line-height: 1.5;
+}
+.consent-field {
+  display: grid;
+  grid-template-columns: 1.2rem 1fr;
+  gap: 0.75rem;
+  align-items: start;
+  line-height: 1.5;
+}
+.consent-field input {
+  width: 1.2rem;
+  min-height: 1.2rem;
+  margin: 0.15rem 0 0;
+}
+.privacy-note {
+  margin: 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.85rem;
+}
+.scan-preview {
+  min-height: 25rem;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  padding: 2rem 0 2rem 2rem;
+}
+.scan-section-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.scan-preview > img {
+  width: 100%;
+  max-height: 30rem;
+  padding-top: 1.5rem;
+}
+.scan-preview > p {
+  align-self: center;
+  justify-self: center;
+}
+.scan-page > .status-line {
+  margin-top: 1.5rem;
+}
+.recognition-result {
+  display: grid;
+  grid-template-columns: minmax(13rem, 0.8fr) 10rem minmax(18rem, 1.2fr);
+  gap: 2rem;
+  align-items: center;
+  margin-top: 3rem;
+  padding: 2rem 0 0;
+  border-top: 2px solid var(--ink);
+}
+.recognition-result header h2 {
+  margin: 0.35rem 0 0.75rem;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+}
+.recognition-result header .report-label {
+  margin-bottom: 1rem;
+}
+.evidence-list {
+  margin: 0;
+}
+.evidence-list div {
+  padding: 0.9rem 0;
+  border-top: 1px solid var(--line);
+}
+.evidence-list dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+.evidence-list dd {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0.3rem 0 0;
+  font-weight: 700;
+}
+.recognition-result footer {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.25rem 0;
+  border-top: 1px solid var(--line-strong);
+}
+.recognition-result footer p {
+  margin: 0;
+}

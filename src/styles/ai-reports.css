@@ -1,0 +1,295 @@
+.insight-report {
+  border-top: 2px solid var(--ink);
+}
+.insight-report section {
+  display: grid;
+  grid-template-columns: 9rem minmax(14rem, 0.7fr) minmax(18rem, 1fr);
+  gap: 2rem;
+  padding: 2rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.insight-report p,
+.insight-report h2 {
+  margin: 0;
+}
+.ai-process-panel {
+  margin-bottom: 2rem;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+.ai-process-panel > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+.ai-process-panel h2,
+.ai-process-panel .report-label {
+  margin: 0;
+}
+.ai-process-panel h2 {
+  margin-top: 0.25rem;
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+}
+.ai-process-state {
+  flex: 0 0 auto;
+  padding: 0.3rem 0.55rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+.ai-process-state.active {
+  color: var(--accent-dark);
+  border-color: #c47b82;
+}
+.ai-process-state.complete {
+  color: var(--success);
+  border-color: #76a98a;
+}
+.ai-process-state.error {
+  color: var(--accent-dark);
+  border-color: var(--accent);
+}
+.ai-process-steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ai-process-steps li {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 1.25rem 1fr;
+  gap: 0.55rem;
+  padding: 1rem;
+  border-left: 1px solid var(--line);
+}
+.ai-process-steps li:first-child {
+  border-left: 0;
+}
+.ai-process-steps li > div {
+  display: grid;
+  gap: 0.25rem;
+}
+.ai-process-steps li strong {
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+.ai-process-steps li small {
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+.ai-process-marker {
+  color: var(--muted);
+  font-weight: 800;
+}
+.ai-process-steps .complete .ai-process-marker {
+  color: var(--success);
+}
+.ai-process-steps .error {
+  background: #f2dcdd;
+}
+.ai-process-steps .error .ai-process-marker {
+  color: var(--accent-dark);
+}
+.ai-process-steps .active {
+  background: #f2dcdd;
+}
+.ai-process-steps .active .ai-process-marker {
+  color: var(--accent);
+  animation: ai-process-pulse 900ms ease-in-out infinite alternate;
+}
+@keyframes ai-process-pulse {
+  to {
+    opacity: 0.35;
+    transform: scale(0.72);
+  }
+}
+.insight-evidence {
+  display: grid;
+  grid-template-columns: minmax(14rem, 0.7fr) minmax(18rem, 1.3fr);
+  gap: 2rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem 0;
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid var(--line);
+}
+.insight-evidence h2,
+.insight-evidence .report-label {
+  margin: 0;
+}
+.insight-evidence h2 {
+  margin-top: 0.35rem;
+  font-family: var(--font-body);
+  font-size: 1.15rem;
+}
+.insight-evidence dl {
+  margin: 0;
+}
+.insight-evidence dl > div {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: 1rem;
+  padding: 0.65rem 0;
+  border-top: 1px solid var(--line);
+}
+.insight-evidence dl > div:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+.insight-evidence dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.insight-evidence dd {
+  margin: 0;
+  font-weight: 700;
+}
+.insight-analysis {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+.insight-analysis > header {
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border-bottom: 1px solid var(--line);
+}
+.insight-analysis > header > p:last-child {
+  max-width: 72ch;
+  margin-bottom: 0;
+}
+.insight-analysis > ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.insight-analysis > ol > li {
+  display: grid;
+  grid-template-columns: 9rem minmax(14rem, 0.8fr) minmax(18rem, 1fr);
+  gap: 2rem;
+  padding: 1.5rem clamp(1.5rem, 4vw, 2.5rem);
+  border-bottom: 1px solid var(--line);
+}
+.insight-analysis > ol > li:last-child {
+  border-bottom: 0;
+}
+.insight-analysis h3,
+.insight-analysis li > p {
+  margin: 0;
+}
+.insight-analysis h3 {
+  font-family: var(--font-body);
+  font-size: 1rem;
+}
+.insight-analysis li > p:last-child {
+  color: var(--muted);
+}
+.expedition-sheet {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+.expedition-sheet > header,
+.expedition-sheet > footer {
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+}
+.expedition-sheet > header {
+  border-bottom: 1px solid var(--line);
+}
+.research-generation-action {
+  max-width: 25rem;
+  display: grid;
+  justify-items: end;
+  gap: 0.5rem;
+  text-align: right;
+}
+/* biome-ignore lint/style/noDescendingSpecificity: This selector belongs to a separate component. */
+.research-generation-action small {
+  color: var(--muted);
+}
+.expedition-provenance {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+.status-badge.active {
+  color: var(--success);
+  border-color: #76a98a;
+}
+.status-badge.inactive {
+  color: var(--warning);
+  border-color: #c1a267;
+}
+.objective-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.objective-list li {
+  display: grid;
+  grid-template-columns: 2rem 1fr;
+  gap: 1rem;
+  padding: 1.3rem clamp(1.5rem, 4vw, 2.5rem);
+  border-bottom: 1px solid var(--line);
+}
+.objective-list li > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem 1rem;
+}
+.objective-list progress {
+  grid-column: 1 / -1;
+  width: 100%;
+  accent-color: var(--accent);
+}
+.objective-mark {
+  color: var(--accent);
+  font-size: 1.35rem;
+}
+.objective-list .complete .objective-mark {
+  color: var(--success);
+}
+.expedition-sheet > footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+.expedition-sheet > footer p {
+  margin: 0;
+}
+.settings-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2rem;
+  align-items: start;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--line-strong);
+}
+.settings-row p {
+  max-width: 72ch;
+  margin-bottom: 0;
+}
+code {
+  padding: 0.1em 0.25em;
+  background: #e5e5dd;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.9em;
+}

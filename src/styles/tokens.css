@@ -1,0 +1,151 @@
+:root {
+  color-scheme: light;
+  --paper: #f3f1e8;
+  --surface: #fffdf7;
+  --ink: #18211f;
+  --muted: #59625e;
+  --line: #c9cec8;
+  --line-strong: #8d9690;
+  --accent: #b4232f;
+  --accent-dark: #861a23;
+  --success: #23643f;
+  --warning: #8a5a00;
+  --focus: #1769aa;
+  --font-body:
+    "Open Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  --font-display:
+    "Modified ITC Kabel Ultra", "Arial Rounded MT Bold", "Trebuchet MS",
+    sans-serif;
+  --font-lab:
+    "Eurostile Extended Bold", "Arial Narrow", "Aptos Display", "Open Sans",
+    sans-serif;
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--paper);
+}
+
+* {
+  box-sizing: border-box;
+}
+html {
+  min-width: 320px;
+  scroll-behavior: smooth;
+}
+body {
+  margin: 0;
+  overflow-x: clip;
+  background: var(--paper);
+}
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+a {
+  color: var(--accent-dark);
+  text-underline-offset: 0.2em;
+}
+img {
+  max-width: 100%;
+  object-fit: contain;
+}
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+h1 {
+  margin-bottom: 0.65rem;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3.75rem);
+  line-height: 1;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+h2 {
+  margin-bottom: 0.75rem;
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+p {
+  color: var(--muted);
+  line-height: 1.6;
+}
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+.button.primary {
+  color: white;
+  background: var(--accent);
+}
+.button.primary:hover {
+  background: var(--accent-dark);
+}
+.button.secondary {
+  color: var(--ink);
+  border-color: var(--line-strong);
+  background: var(--surface);
+}
+.button.secondary:hover {
+  background: #e9e8df;
+}
+.button.danger {
+  color: var(--accent-dark);
+  border-color: #d7a6aa;
+  background: transparent;
+}
+.button:disabled {
+  opacity: 0.52;
+  cursor: not-allowed;
+}
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+.text-button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0;
+  border: 0;
+  color: var(--accent-dark);
+  background: transparent;
+  text-align: left;
+  text-decoration: underline;
+  cursor: pointer;
+}

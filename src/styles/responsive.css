@@ -1,0 +1,640 @@
+@media (max-width: 1180px) {
+  .collection-entry {
+    grid-template-columns: minmax(15rem, 0.8fr) minmax(22rem, 1.6fr);
+  }
+  .collection-editor-body {
+    grid-template-columns: minmax(22rem, 1fr) auto;
+  }
+  .entry-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 980px) {
+  .app-frame {
+    display: block;
+  }
+  .app-sidebar {
+    display: none;
+  }
+  .mobile-header {
+    position: sticky;
+    z-index: 15;
+    top: 0;
+    min-height: calc(64px + env(safe-area-inset-top));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: calc(0.6rem + env(safe-area-inset-top))
+      max(1rem, env(safe-area-inset-right)) 0.6rem
+      max(1rem, env(safe-area-inset-left));
+    border-bottom: 1px solid var(--line-strong);
+    background: var(--surface);
+  }
+  .mobile-header .wordmark-mark {
+    width: 2rem;
+    height: 2rem;
+  }
+  .icon-button {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--line-strong);
+    border-radius: 5px;
+    color: var(--ink);
+    background: var(--surface);
+    cursor: pointer;
+  }
+  .icon-button .hn {
+    font-size: 1.2rem;
+  }
+  .mobile-menu[open] {
+    position: fixed;
+    inset: 0 0 0 auto;
+    width: min(23rem, calc(100% - 2rem));
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 0;
+    padding: max(1rem, env(safe-area-inset-top))
+      max(1rem, env(safe-area-inset-right))
+      max(1rem, env(safe-area-inset-bottom)) 1rem;
+    border: 0;
+    border-left: 1px solid var(--line-strong);
+    color: var(--ink);
+    background: var(--surface);
+  }
+  .mobile-menu::backdrop {
+    background: rgb(24 33 31 / 58%);
+  }
+  .mobile-menu > header {
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .mobile-menu > header > span {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+  .mobile-menu .app-nav {
+    overflow-y: auto;
+    padding: 1.25rem 0;
+  }
+  .drawer-sign-out {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-top: auto;
+    padding: 0.65rem 0.75rem;
+    border: 0;
+    border-top: 1px solid var(--line);
+    color: var(--accent-dark);
+    background: transparent;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .page,
+  .wide-page {
+    width: min(100% - clamp(2rem, 6vw, 4rem), 72rem);
+  }
+  .filter-grid {
+    grid-template-columns: minmax(13rem, 1.3fr) repeat(2, minmax(9rem, 1fr));
+  }
+  .collection-entry {
+    grid-template-columns: 1fr;
+  }
+  .collection-editor-body {
+    grid-template-columns: minmax(22rem, 1fr) auto;
+  }
+  .collection-fields {
+    grid-template-columns: minmax(7rem, 0.5fr) 1fr;
+  }
+  .entry-actions {
+    grid-column: auto;
+  }
+  .assistant-workspace {
+    grid-template-columns: 13rem minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 800px) {
+  .table-head {
+    display: none;
+  }
+  .data-table {
+    border-top-width: 1px;
+  }
+  .table-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.8rem 1rem;
+    padding: 1rem 0;
+  }
+  .table-row > span::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--muted);
+    font-family: var(--font-lab);
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+  .table-row .species-cell {
+    grid-column: 1 / -1;
+  }
+  .table-row .species-cell::before {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  h1 {
+    line-height: 1.08;
+  }
+  .landing {
+    padding: 1rem;
+  }
+  .landing-intro {
+    grid-template-columns: 1fr;
+    padding: 4rem 0;
+  }
+  .landing-actions {
+    width: min(100%, 13.5rem);
+    grid-template-columns: 1fr;
+  }
+  .landing-nav .button {
+    padding-inline: 0.7rem;
+  }
+  .field-sheet {
+    box-shadow: 6px 7px 0 #d9d8cf;
+  }
+  .auth-page {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+    padding: 1rem;
+  }
+  .auth-panel {
+    margin: auto 0;
+  }
+  .page {
+    padding-top: 2.25rem;
+    padding-bottom: 6rem;
+  }
+  .page-header {
+    align-items: flex-start;
+    flex-direction: column;
+    margin-bottom: 1.75rem;
+  }
+  .research-generation-action {
+    max-width: 36rem;
+    justify-items: start;
+    text-align: left;
+  }
+  .stat-ledger {
+    grid-template-columns: 1fr;
+  }
+  .stat-ledger div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .stat-ledger dd {
+    font-size: 2rem;
+  }
+  .dashboard-columns,
+  .detail-columns {
+    grid-template-columns: 1fr;
+  }
+  .catalog-stamp {
+    display: none;
+  }
+  .catalog-filters > summary {
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    list-style: none;
+  }
+  .catalog-filters > summary::-webkit-details-marker {
+    display: none;
+  }
+  .catalog-filters > summary > span {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+  .catalog-filters[open] > summary > .hn {
+    rotate: 180deg;
+  }
+  .catalog-filters:not([open]) .filter-grid {
+    display: none;
+  }
+  .filter-grid {
+    grid-template-columns: 1fr 1fr;
+    padding: 1rem;
+    border-top: 1px solid var(--line);
+  }
+  .filter-search {
+    grid-column: 1 / -1;
+  }
+  .filter-actions {
+    justify-content: stretch;
+  }
+  .filter-actions .button {
+    flex: 1;
+  }
+  .table-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .pokemon-table .table-row {
+    grid-template-areas:
+      "artwork number action"
+      "artwork name action"
+      "artwork metadata action";
+    grid-template-columns: 64px minmax(0, 1fr) 44px;
+    gap: 0.15rem 0.75rem;
+    min-height: 92px;
+    padding: 0.8rem 0;
+  }
+  .pokemon-table .table-row > span::before,
+  .pokemon-table .pokemon-metadata > span::before {
+    display: none;
+  }
+  .pokemon-table .index-number {
+    grid-area: number;
+    align-self: end;
+    line-height: 1;
+  }
+  .pokemon-table .species-cell {
+    display: contents;
+  }
+  .pokemon-table .catalog-artwork-frame {
+    grid-area: artwork;
+    align-self: center;
+  }
+  .pokemon-table .species-cell strong {
+    grid-area: name;
+    align-self: center;
+    font-size: 1rem;
+    line-height: 1.2;
+  }
+  .pokemon-table .pokemon-metadata {
+    grid-area: metadata;
+    align-self: start;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.55rem;
+    min-width: 0;
+  }
+  .pokemon-table .pokemon-generation {
+    color: var(--muted);
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+  .pokemon-table .pokemon-generation::before {
+    content: "·";
+    margin-right: 0.55rem;
+    color: var(--line-strong);
+  }
+  .pokemon-table .row-link {
+    grid-area: action;
+    width: 44px;
+    height: 44px;
+    align-self: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 1.15rem;
+    text-decoration: none;
+  }
+  .pokemon-table .row-link-label {
+    display: none;
+  }
+  .pagination {
+    justify-content: stretch;
+  }
+  .pagination .button {
+    flex: 1;
+  }
+  .detail-header {
+    grid-template-columns: 1fr;
+  }
+  .detail-artwork-frame {
+    grid-row: 1;
+    width: 210px;
+    height: 210px;
+  }
+  .collection-fields {
+    grid-template-columns: 1fr;
+  }
+  .collection-editor {
+    border-top: 1px solid var(--line);
+  }
+  .collection-editor > summary {
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    list-style: none;
+  }
+  .collection-editor > summary::-webkit-details-marker {
+    display: none;
+  }
+  .collection-editor > summary > span {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+  .collection-editor[open] > summary > .hn {
+    rotate: 180deg;
+  }
+  .collection-editor:not([open]) .collection-editor-body {
+    display: none;
+  }
+  .collection-editor-body {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding-top: 1rem;
+  }
+  .collection-fields .wide-field {
+    grid-column: auto;
+  }
+  .collection-identity img {
+    width: 58px;
+    flex-basis: 58px;
+  }
+  .insight-report section {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+  .ai-process-panel > header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .ai-process-steps {
+    grid-template-columns: 1fr;
+  }
+  .ai-process-steps li,
+  .ai-process-steps li:first-child {
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+  .ai-process-steps li:first-child {
+    border-top: 0;
+  }
+  .insight-evidence,
+  .insight-analysis > ol > li {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  .expedition-sheet > footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .objective-list li > div {
+    grid-template-columns: 1fr;
+  }
+  .objective-list progress {
+    grid-column: 1;
+  }
+  .settings-row {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  .scan-workbench,
+  .recognition-result,
+  .assistant-workspace {
+    grid-template-columns: 1fr;
+  }
+  .scan-form,
+  .conversation-index {
+    padding-right: 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .scan-preview,
+  .assistant-thread {
+    padding-left: 0;
+  }
+  .scan-preview {
+    min-height: 20rem;
+  }
+  .recognition-result > img {
+    grid-row: 1;
+    justify-self: center;
+  }
+  .recognition-result footer,
+  .evidence-list {
+    grid-column: 1;
+  }
+  .recognition-result footer,
+  .assistant-composer > div {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .conversation-index h2,
+  .conversation-index > ol,
+  .conversation-index > .conversation-empty {
+    display: none;
+  }
+  .conversation-picker {
+    display: block;
+  }
+  .message.user {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .landing-nav .wordmark,
+  .mobile-header .wordmark {
+    gap: 0.45rem;
+    font-size: 0.82rem;
+  }
+  .landing-nav .wordmark-mark {
+    width: 2rem;
+    height: 2rem;
+  }
+  .page,
+  .wide-page {
+    width: calc(100% - 2rem);
+  }
+  .page-header {
+    gap: 1rem;
+    padding-bottom: 1rem;
+  }
+  .filter-grid {
+    grid-template-columns: 1fr;
+  }
+  .filter-search {
+    grid-column: auto;
+  }
+  .filter-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .table-summary {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  /* biome-ignore lint/style/noDescendingSpecificity: This rule targets a different responsive layout. */
+  .catalog-artwork-frame {
+    width: 56px;
+    height: 56px;
+    flex-basis: 56px;
+  }
+  .pokemon-table .table-row {
+    grid-template-columns: 56px minmax(0, 1fr) 44px;
+    column-gap: 0.65rem;
+  }
+  .pagination {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+  }
+  .pagination .button {
+    padding-inline: 0.55rem;
+  }
+  .entry-actions,
+  .recognition-result footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .assistant-fab {
+    right: max(1rem, env(safe-area-inset-right));
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    width: 52px;
+    height: 52px;
+    justify-content: center;
+    padding: 0;
+  }
+  /* biome-ignore lint/style/noDescendingSpecificity: This selector belongs to a separate component. */
+  .assistant-fab span {
+    display: none;
+  }
+  .assistant-composer {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  code {
+    overflow-wrap: anywhere;
+  }
+}
+
+::view-transition-old(root) {
+  animation: 0.16s ease-out both fade-route-out;
+}
+::view-transition-new(root) {
+  animation: 0.28s cubic-bezier(0.16, 1, 0.3, 1) both fade-route-in;
+}
+::view-transition-group(*) {
+  animation-duration: 600ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+::view-transition-group(root) {
+  animation-duration: 280ms;
+}
+::view-transition-group(pokemon-artwork) {
+  animation-duration: 600ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+::view-transition-old(pokemon-artwork),
+::view-transition-new(pokemon-artwork) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-group(.app-chrome),
+::view-transition-group(app-sidebar),
+::view-transition-group(mobile-header),
+::view-transition-group(assistant-action),
+::view-transition-old(.app-chrome),
+::view-transition-new(.app-chrome),
+::view-transition-old(app-sidebar),
+::view-transition-new(app-sidebar),
+::view-transition-old(mobile-header),
+::view-transition-new(mobile-header),
+::view-transition-old(assistant-action),
+::view-transition-new(assistant-action) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+html:active-view-transition-type(pokemon-detail)::view-transition-old(root) {
+  opacity: 0;
+  animation: none;
+}
+html:active-view-transition-type(pokemon-detail)::view-transition-new(root) {
+  opacity: 1;
+  animation: none;
+}
+@keyframes fade-route-out {
+  to {
+    opacity: 0.88;
+  }
+}
+@keyframes fade-route-in {
+  from {
+    opacity: 0.72;
+    transform: translateY(5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto;
+    transition-duration: 0.01ms;
+    animation-duration: 0.01ms;
+  }
+  ::view-transition-group(*),
+  ::view-transition-image-pair(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(pokemon-artwork),
+  ::view-transition-old(pokemon-artwork),
+  ::view-transition-new(pokemon-artwork) {
+    animation: none;
+  }
+  /* biome-ignore lint/style/noDescendingSpecificity: This reduced-motion rule belongs to a separate component. */
+  .thinking-dots span {
+    opacity: 1;
+    animation: none;
+    transform: none;
+  }
+  .ai-process-steps .active .ai-process-marker {
+    opacity: 1;
+    animation: none;
+    transform: none;
+  }
+}

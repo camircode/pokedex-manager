@@ -1,0 +1,193 @@
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--ink);
+  font-weight: 800;
+  text-decoration: none;
+}
+.wordmark-mark {
+  width: 2.3rem;
+  height: 2.3rem;
+  display: inline-grid;
+  place-items: center;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  color: var(--accent);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+}
+.kicker,
+.report-label,
+.sheet-code {
+  margin-bottom: 0.65rem;
+  color: var(--accent-dark);
+  font-size: 0.72rem;
+  font-family: var(--font-lab);
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.landing {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem clamp(1rem, 4vw, 4rem);
+}
+.landing-nav {
+  max-width: 82rem;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.landing-intro {
+  max-width: 82rem;
+  width: 100%;
+  margin: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(19rem, 0.8fr);
+  align-items: center;
+  gap: clamp(2rem, 7vw, 7rem);
+  padding: 5rem 0;
+}
+.landing-intro .lead {
+  max-width: 62ch;
+  font-size: 1.12rem;
+}
+.landing-actions {
+  width: fit-content;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 13.5rem));
+}
+.landing-actions .button {
+  width: 100%;
+}
+.field-sheet {
+  padding: clamp(1.5rem, 4vw, 3rem);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  box-shadow: 9px 11px 0 #d9d8cf;
+}
+.field-sheet ol {
+  margin: 2.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.field-sheet li {
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  gap: 1rem;
+  align-items: baseline;
+  padding: 1.15rem 0;
+  border-top: 1px solid var(--line);
+  line-height: 1.45;
+}
+.field-sheet li strong {
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.landing-footer {
+  max-width: 82rem;
+  width: 100%;
+  margin: 0 auto;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr minmax(20rem, 34rem) 1fr;
+  grid-template-rows: auto 1fr;
+  padding: 1.5rem;
+}
+.auth-page > .wordmark {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+.auth-panel {
+  grid-column: 2;
+  align-self: center;
+  padding: clamp(1.5rem, 5vw, 3rem);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+.auth-panel h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+.auth-form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+.password-field {
+  position: relative;
+  display: block;
+}
+.password-field input {
+  padding-inline-end: 6.7rem;
+}
+.password-toggle {
+  position: absolute;
+  inset-block-start: 0.4rem;
+  inset-inline-end: 0;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.7rem;
+  border: 0;
+  color: var(--accent-dark);
+  background: transparent;
+  font-size: 0.78rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+.password-toggle:hover {
+  background: #f2dcdd;
+}
+label {
+  color: var(--ink);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+/* biome-ignore lint/style/noDescendingSpecificity: Base controls intentionally precede component overrides in the cascade manifest. */
+input,
+textarea,
+select {
+  width: 100%;
+  margin-top: 0.4rem;
+  padding: 0.72rem 0.8rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  color: var(--ink);
+  background: white;
+}
+/* biome-ignore lint/style/noDescendingSpecificity: Base controls intentionally precede component overrides in the cascade manifest. */
+input {
+  min-height: 44px;
+}
+select {
+  min-height: 44px;
+  appearance: auto;
+}
+textarea {
+  resize: vertical;
+}
+small {
+  color: var(--muted);
+}
+.form-error {
+  margin: 0;
+  color: var(--accent-dark);
+  font-weight: 650;
+}
+.auth-switch {
+  margin: 1.5rem 0 0;
+}

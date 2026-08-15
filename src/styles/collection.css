@@ -1,0 +1,58 @@
+.collection-ledger {
+  display: grid;
+  gap: 1rem;
+}
+.collection-entry {
+  display: grid;
+  grid-template-columns: minmax(15rem, 0.8fr) minmax(24rem, 1.6fr);
+  gap: 1.5rem;
+  align-items: center;
+  padding: 1.25rem;
+  border-top: 2px solid var(--ink);
+  background: var(--surface);
+}
+.collection-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.collection-identity img {
+  flex: 0 0 72px;
+}
+.collection-identity h2 {
+  margin: 0.2rem 0 0.5rem;
+}
+.collection-editor {
+  min-width: 0;
+}
+.collection-editor > summary {
+  display: none;
+}
+.collection-editor-body {
+  display: grid;
+  grid-template-columns: minmax(24rem, 1fr) auto;
+  gap: 1.5rem;
+  align-items: center;
+}
+.collection-fields {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: 0.75rem;
+}
+.collection-fields .wide-field {
+  grid-column: 1 / -1;
+}
+.check-field {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+}
+.check-field input {
+  width: 1.1rem;
+  min-height: auto;
+  margin: 0;
+}
+.entry-actions {
+  display: grid;
+  gap: 0.5rem;
+}

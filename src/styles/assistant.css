@@ -1,0 +1,298 @@
+.assistant-workspace {
+  width: 100%;
+  min-width: 0;
+  min-height: 38rem;
+  display: grid;
+  grid-template-columns: 16rem minmax(0, 1fr);
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid var(--line-strong);
+}
+.conversation-index {
+  min-width: 0;
+  padding: 1.5rem 1rem 1.5rem 0;
+  border-right: 1px solid var(--line);
+}
+.conversation-index h2 {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+}
+.conversation-picker {
+  display: none;
+}
+.conversation-index > ol {
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.conversation-index li {
+  border-top: 1px solid var(--line);
+}
+.conversation-index button {
+  width: 100%;
+  min-height: 58px;
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.7rem 0.6rem;
+  border: 0;
+  color: var(--ink);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.conversation-index button:hover {
+  background: #ecebe3;
+}
+.conversation-index button.active {
+  color: var(--accent-dark);
+  background: #f2dcdd;
+}
+.conversation-index button span,
+.conversation-empty {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.assistant-thread {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 0 0 2rem;
+}
+.assistant-thread > .empty-state {
+  margin: auto;
+}
+.message-ledger {
+  min-width: 0;
+  display: grid;
+  gap: 1.5rem;
+  margin: 0 0 2rem;
+  padding: 0;
+  list-style: none;
+}
+.message {
+  width: 100%;
+  min-width: 0;
+  max-width: 72ch;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--line);
+}
+.message.user {
+  max-width: 58ch;
+  margin-left: auto;
+}
+.message-role {
+  color: var(--accent-dark);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.message p {
+  margin: 0.45rem 0 0;
+  color: var(--ink);
+}
+.message-markdown > :first-child {
+  margin-top: 0.45rem;
+}
+.message-markdown > :last-child {
+  margin-bottom: 0;
+}
+.message-markdown,
+.message-markdown a,
+.assistant-activity li > div,
+.tool-call-list li > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.message-markdown h1,
+.message-markdown h2,
+.message-markdown h3 {
+  margin: 1.15rem 0 0.45rem;
+  font-family: var(--font-body);
+  font-size: 1rem;
+}
+.message-markdown ul,
+.message-markdown ol {
+  margin: 0.65rem 0 0;
+  padding-left: 1.4rem;
+}
+.message-markdown li + li {
+  margin-top: 0.3rem;
+}
+.message-markdown blockquote {
+  margin: 0.8rem 0 0;
+  padding-left: 0.9rem;
+  border-left: 1px solid var(--line-strong);
+  color: var(--muted);
+}
+.message-markdown pre {
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 0.8rem;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.message-markdown code {
+  font-size: 0.88em;
+}
+.message-markdown table {
+  width: 100%;
+  margin-top: 0.8rem;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.88rem;
+}
+.message-markdown th,
+.message-markdown td {
+  padding: 0.45rem;
+  border: 1px solid var(--line);
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.citation-link {
+  display: inline-flex;
+  padding: 0.1rem 0.35rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+.citation-link:hover {
+  color: var(--surface);
+  background: var(--accent-dark);
+}
+.message.pending p {
+  color: var(--muted);
+}
+.message details {
+  margin-top: 1rem;
+  color: var(--muted);
+}
+.message summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-size: 0.82rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+.citation-list {
+  display: grid;
+  gap: 0.8rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.citation-list li {
+  display: grid;
+  grid-template-columns: 5rem 1fr;
+  gap: 0.5rem;
+  scroll-margin-top: 1rem;
+}
+.citation-list li:target {
+  background: #f2dcdd;
+}
+.citation-list p {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.citation-list a {
+  display: inline-block;
+  margin-top: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+.tool-call-list,
+.assistant-activity ol {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tool-call-list {
+  margin-bottom: 1rem;
+}
+.tool-call-list li,
+.assistant-activity li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+}
+.tool-call-list .hn,
+.assistant-activity .hn {
+  margin-top: 0.15rem;
+  color: var(--accent-dark);
+}
+.thinking-status {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.65rem;
+  color: var(--muted);
+}
+.thinking-status > span:last-child {
+  margin-left: auto;
+  font-family: var(--font-lab);
+  font-size: 0.72rem;
+}
+.thinking-dots {
+  display: inline-flex;
+  gap: 0.2rem;
+}
+/* biome-ignore lint/style/noDescendingSpecificity: This selector belongs to a separate component. */
+.thinking-dots span {
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: assistant-thinking 900ms ease-in-out infinite alternate;
+}
+.thinking-dots span:nth-child(2) {
+  animation-delay: 150ms;
+}
+.thinking-dots span:nth-child(3) {
+  animation-delay: 300ms;
+}
+.assistant-activity li > div {
+  display: grid;
+  gap: 0.15rem;
+}
+.assistant-activity li span {
+  font-size: 0.75rem;
+}
+.assistant-activity code,
+.tool-call-list code {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+@keyframes assistant-thinking {
+  to {
+    opacity: 0.35;
+    transform: translateY(-0.2rem);
+  }
+}
+.assistant-composer {
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+  padding: 1.25rem 0 1.5rem;
+  border-top: 1px solid var(--line-strong);
+  background: var(--paper);
+}
+.assistant-composer textarea {
+  display: block;
+}
+/* biome-ignore lint/style/noDescendingSpecificity: This selector belongs to a separate component. */
+.assistant-composer > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+.assistant-thread-end {
+  width: 1px;
+  height: 1px;
+}

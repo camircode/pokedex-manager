@@ -13,6 +13,20 @@ import {
 
 const root = resolve(fileURLToPath(new URL('../..', import.meta.url)))
 const read = (path: string) => readFileSync(resolve(root, path), 'utf8')
+const readStyles = () =>
+  [
+    'src/styles/tokens.css',
+    'src/styles/public.css',
+    'src/styles/shell.css',
+    'src/styles/catalog.css',
+    'src/styles/collection.css',
+    'src/styles/ai-reports.css',
+    'src/styles/scan.css',
+    'src/styles/assistant.css',
+    'src/styles/responsive.css',
+  ]
+    .map(read)
+    .join('\n')
 
 describe('Pokedex URL and responsive UI contracts', () => {
   it('exposes password visibility in both authentication flows', () => {
@@ -29,7 +43,7 @@ describe('Pokedex URL and responsive UI contracts', () => {
 
   it('describes overlapping type presence with an explicit denominator', () => {
     const dashboard = read('src/routes/app/index.tsx')
-    const styles = read('src/styles.css')
+    const styles = readStyles()
 
     expect(dashboard).toContain('Presencia por tipo')
     expect(dashboard).toContain('Porcentaje de ejemplares')
@@ -44,7 +58,7 @@ describe('Pokedex URL and responsive UI contracts', () => {
 
   it('keeps the landing promise specific and its primary actions aligned', () => {
     const landing = read('src/routes/index.tsx')
-    const styles = read('src/styles.css')
+    const styles = readStyles()
 
     expect(landing).toContain('¿Crees que es una Pokédex normal?')
     expect(landing).toContain('Un LLM conectado por MCP')
@@ -69,7 +83,7 @@ describe('Pokedex URL and responsive UI contracts', () => {
     expect(pokedex).not.toContain('className="catalog-filters" open')
     expect(pokedex).toContain('className="pokemon-metadata"')
     expect(pokedex).toContain('className="row-link-label"')
-    const styles = read('src/styles.css')
+    const styles = readStyles()
     expect(styles).toMatch(
       /\.pokemon-table \.table-row\s*{[^}]*grid-template-areas:[^}]*"artwork number action"/,
     )
@@ -86,7 +100,7 @@ describe('Pokedex URL and responsive UI contracts', () => {
 
   it('uses a complete mobile drawer and route-aware assistant action', () => {
     const shell = read('src/components/app-shell.tsx')
-    const styles = read('src/styles.css')
+    const styles = readStyles()
     expect(shell).toContain('<dialog')
     expect(shell).toContain('aria-label="Abrir menú principal"')
     expect(shell).toContain("pathname !== '/app/assistant'")
@@ -131,7 +145,7 @@ describe('Pokedex URL and responsive UI contracts', () => {
     const assistant = read('src/routes/app/assistant.tsx')
     const assistantApi = read('src/routes/api/assistant.ts')
     const assistantServer = read('src/server/assistant.ts')
-    const styles = read('src/styles.css')
+    const styles = readStyles()
     const packageJson = read('package.json')
 
     expect(packageJson).toContain('"react-markdown"')
@@ -160,7 +174,7 @@ describe('Pokedex URL and responsive UI contracts', () => {
   it('progressively discloses dense controls on mobile', () => {
     const collection = read('src/routes/app/collection.tsx')
     const ui = read('src/lib/ui.ts')
-    const styles = read('src/styles.css')
+    const styles = readStyles()
 
     expect(ui).toContain("useResponsiveDetails(query = '(min-width: 721px)')")
     expect(collection).toContain('className="collection-editor"')
@@ -181,7 +195,7 @@ describe('Pokedex URL and responsive UI contracts', () => {
     const research = read('src/routes/app/research.tsx')
     const scan = read('src/routes/app/scan.tsx')
     const process = read('src/components/ai-process.tsx')
-    const styles = read('src/styles.css')
+    const styles = readStyles()
 
     for (const surface of [insights, research, scan]) {
       expect(surface).toContain('<AiProcess')
@@ -214,7 +228,7 @@ describe('Pokedex URL and responsive UI contracts', () => {
       'src/components/pokemon-transition-coordinator.tsx',
     )
     const reveal = read('src/components/route-reveal.tsx')
-    const styles = read('src/styles.css')
+    const styles = readStyles()
 
     expect(detailServerFunction).toContain("createServerFn({ method: 'GET' })")
     expect(detailServerFunction).toContain('getCatalogService()')
