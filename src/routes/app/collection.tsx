@@ -3,12 +3,7 @@ import { useState } from 'react'
 
 import { EmptyState, ErrorState, LoadingState } from '@/components/status'
 import { pokemonTypeLabel } from '@/lib/catalog-query'
-import {
-  apiMutation,
-  displayName,
-  useApi,
-  useResponsiveDetails,
-} from '@/lib/ui'
+import { apiMutation, displayName, useApi } from '@/lib/ui'
 import type { CollectionEntry } from '@/server/collection'
 
 export const Route = createFileRoute('/app/collection')({
@@ -98,8 +93,6 @@ function CollectionEntryForm({
   onSave: (entry: CollectionEntry, form: HTMLFormElement) => Promise<void>
   onRemove: (entry: CollectionEntry) => Promise<void>
 }) {
-  const editorRef = useResponsiveDetails()
-
   return (
     <form
       className="collection-entry"
@@ -112,11 +105,29 @@ function CollectionEntryForm({
         {entry.pokemon.sprite && (
           <img src={entry.pokemon.sprite} alt="" width="72" height="72" />
         )}
-        <div>
-          <span className="index-number">
-            #{String(entry.pokemonId).padStart(4, '0')}
-          </span>
-          <h2>{displayName(entry.pokemon.name)}</h2>
+        <div className="collection-identity-content">
+          <div className="collection-heading">
+            <div>
+              <span className="index-number">
+                #{String(entry.pokemonId).padStart(4, '0')}
+              </span>
+              <h2>{displayName(entry.pokemon.name)}</h2>
+            </div>
+            {entry.nickname && (
+              <p className="collection-nickname">
+                <span className="sr-only">Apodo: </span>“{entry.nickname}”
+              </p>
+            )}
+          </div>
+          <div className="collection-metadata">
+            <span>
+              {entry.quantity}{' '}
+              {entry.quantity === 1 ? 'ejemplar' : 'ejemplares'}
+            </span>
+            {entry.favorite && (
+              <span className="collection-favorite">Favorito</span>
+            )}
+          </div>
           <div className="type-list">
             {entry.pokemon.types.map((type) => (
               <span className={`type type-${type}`} key={type}>
@@ -124,13 +135,23 @@ function CollectionEntryForm({
               </span>
             ))}
           </div>
+          {entry.tags.length > 0 && (
+            <ul className="collection-tags" aria-label="Etiquetas">
+              {entry.tags.map((tag) => (
+                <li key={tag}>#{tag}</li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
-      <details ref={editorRef} className="collection-editor">
+      <details className="collection-editor">
         <summary>
           <span>
             <i className="hn hn-edit" aria-hidden="true" />
-            Editar registro
+            <span className="editor-label editor-label-closed">Editar</span>
+            <span className="editor-label editor-label-open">
+              Cerrar edición
+            </span>
           </span>
           <i className="hn hn-chevron-down" aria-hidden="true" />
         </summary>

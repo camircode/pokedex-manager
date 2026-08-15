@@ -59,15 +59,21 @@ describe('Pokedex URL and responsive UI contracts', () => {
   it('keeps the landing promise specific and its primary actions aligned', () => {
     const landing = read('src/routes/index.tsx')
     const styles = readStyles()
+    const landingHeader = landing.match(/<header[\s\S]*?<\/header>/)?.[0]
 
     expect(landing).toContain('¿Crees que es una Pokédex normal?')
     expect(landing).toContain('Un LLM conectado por MCP')
     expect(landing).toContain('expediciones verificables')
+    expect(landing).not.toContain('LLM + MCP / Colección')
+    expect(landing).not.toContain('REGISTRO / OPERACIÓN')
+    expect(landingHeader).not.toContain('to="/sign-in"')
     expect(landing).toContain('className="button-row landing-actions"')
     expect(styles).toMatch(
       /\.landing-actions\s*{[^}]*grid-template-columns: repeat\(2, minmax\(0, 13\.5rem\)\)/,
     )
-    expect(styles).toMatch(/\.landing-actions \.button\s*{[^}]*width: 100%/)
+    expect(styles).toMatch(
+      /\.landing-actions \.button\s*{[^}]*width: 100%;[^}]*min-height: 4rem/,
+    )
   })
 
   it('keeps typed catalog defaults deterministic and shareable', () => {
@@ -178,9 +184,11 @@ describe('Pokedex URL and responsive UI contracts', () => {
 
     expect(ui).toContain("useResponsiveDetails(query = '(min-width: 721px)')")
     expect(collection).toContain('className="collection-editor"')
-    expect(collection).toContain('Editar registro')
+    expect(collection).not.toContain('ref={editorRef}')
+    expect(collection).toContain('className="collection-tags"')
+    expect(collection).toContain('Cerrar edición')
     expect(styles).toMatch(
-      /@media \(max-width: 720px\)[\s\S]*\.collection-editor > summary[\s\S]*display: flex/,
+      /\.collection-editor > summary\s*{[^}]*display: flex/,
     )
     expect(styles).toMatch(
       /@media \(max-width: 720px\)[\s\S]*\.conversation-picker[\s\S]*display: block/,

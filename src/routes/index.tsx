@@ -5,21 +5,16 @@ export const Route = createFileRoute('/')({ component: Home })
 function Home() {
   return (
     <main className="landing">
-      <nav className="landing-nav" aria-label="Navegación pública">
+      <header className="landing-nav">
         <span className="wordmark">
           <span className="wordmark-mark" aria-hidden="true">
             PM
           </span>{' '}
           Pokédex Manager
         </span>
-        <Link to="/sign-in" className="button secondary">
-          <i className="hn hn-user" aria-hidden="true" />
-          Iniciar sesión
-        </Link>
-      </nav>
+      </header>
       <section className="landing-intro">
         <div>
-          <p className="kicker">LLM + MCP / Colección</p>
           <h1>¿Crees que es una Pokédex normal?</h1>
           <p className="lead">
             No. Un LLM conectado por MCP analiza tu colección, reconoce cartas y
@@ -40,7 +35,6 @@ function Home() {
           className="field-sheet"
           aria-label="Flujo de trabajo del producto"
         >
-          <p className="sheet-code">REGISTRO / OPERACIÓN</p>
           <ol>
             <li>
               <strong>01</strong>

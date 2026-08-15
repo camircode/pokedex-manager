@@ -4,17 +4,17 @@
 }
 .collection-entry {
   display: grid;
-  grid-template-columns: minmax(15rem, 0.8fr) minmax(24rem, 1.6fr);
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 1.5rem;
-  align-items: center;
+  align-items: start;
   padding: 1.25rem;
   border-top: 2px solid var(--ink);
   background: var(--surface);
 }
 .collection-identity {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  align-items: flex-start;
+  gap: 1rem;
 }
 .collection-identity img {
   flex: 0 0 72px;
@@ -22,17 +22,105 @@
 .collection-identity h2 {
   margin: 0.2rem 0 0.5rem;
 }
+.collection-identity-content {
+  min-width: 0;
+}
+.collection-heading {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+}
+.collection-nickname {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  font-weight: 700;
+}
+.collection-metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.9rem;
+  margin-bottom: 0.65rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.collection-favorite {
+  color: var(--accent-dark);
+  font-weight: 800;
+}
+.collection-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.7rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.collection-tags li {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  color: var(--ink);
+  background: #e9e8df;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
 .collection-editor {
   min-width: 0;
 }
 .collection-editor > summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  font-weight: 800;
+  cursor: pointer;
+  list-style: none;
+}
+.collection-editor > summary:hover {
+  background: #e9e8df;
+}
+.collection-editor > summary::-webkit-details-marker {
   display: none;
+}
+.collection-editor > summary > span {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.collection-editor[open] {
+  grid-column: 1 / -1;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+.collection-editor[open] > summary {
+  width: fit-content;
+  margin-left: auto;
+}
+.collection-editor[open] > summary > .hn {
+  rotate: 180deg;
+}
+.editor-label-open {
+  display: none;
+}
+.collection-editor[open] .editor-label-closed {
+  display: none;
+}
+.collection-editor[open] .editor-label-open {
+  display: inline;
 }
 .collection-editor-body {
   display: grid;
   grid-template-columns: minmax(24rem, 1fr) auto;
   gap: 1.5rem;
   align-items: center;
+  padding-top: 1rem;
 }
 .collection-fields {
   display: grid;
