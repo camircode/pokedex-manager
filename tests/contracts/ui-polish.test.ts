@@ -196,6 +196,14 @@ describe('Pokedex URL and responsive UI contracts', () => {
     )
   })
 
+  it('offers camera capture without removing file selection', () => {
+    const scan = read('src/routes/app/scan.tsx')
+
+    expect(scan).toContain('capture="environment"')
+    expect(scan).toContain('Tomar foto')
+    expect(scan).toContain('Elegir archivo')
+  })
+
   it('preloads both routes and scopes shared Pokemon fields through animation', () => {
     const list = read('src/routes/app/pokedex/index.tsx')
     const detail = read('src/routes/app/pokedex/$pokemonId.tsx')

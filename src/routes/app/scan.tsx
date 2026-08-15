@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { type ChangeEvent, useEffect, useRef, useState } from 'react'
 
 import { AiProcess, type AiProcessStep } from '@/components/ai-process'
 import { ErrorState } from '@/components/status'
@@ -19,6 +19,8 @@ const recognitionSteps: AiProcessStep[] = [
 ]
 
 function Scan() {
+  const cameraInput = useRef<HTMLInputElement>(null)
+  const fileInput = useRef<HTMLInputElement>(null)
   const [file, setFile] = useState<File>()
   const [previewUrl, setPreviewUrl] = useState('')
   const [consent, setConsent] = useState(false)
@@ -63,6 +65,12 @@ function Scan() {
         caught instanceof Error ? caught.message : 'La imagen no es válida.',
       )
     }
+  }
+
+  function handleImageInput(event: ChangeEvent<HTMLInputElement>) {
+    const selected = event.currentTarget.files?.[0]
+    event.currentTarget.value = ''
+    void selectImage(selected)
   }
 
   async function analyze() {
@@ -155,15 +163,38 @@ function Scan() {
           }}
         >
           <fieldset>
-            <legend>1. Selecciona la imagen</legend>
-            <label htmlFor="scan-image">Archivo de la carta</label>
+            <legend>1. Obtén una imagen</legend>
+            <div className="button-row" aria-describedby="scan-image-help">
+              <button
+                type="button"
+                className="button secondary"
+                onClick={() => cameraInput.current?.click()}
+              >
+                <i className="hn hn-camera" aria-hidden="true" />
+                Tomar foto
+              </button>
+              <button
+                type="button"
+                className="button secondary"
+                onClick={() => fileInput.current?.click()}
+              >
+                Elegir archivo
+              </button>
+            </div>
             <input
-              id="scan-image"
-              name="image"
+              ref={cameraInput}
+              hidden
               type="file"
               accept="image/png,image/jpeg,image/webp"
-              aria-describedby="scan-image-help"
-              onChange={(event) => void selectImage(event.target.files?.[0])}
+              capture="environment"
+              onChange={handleImageInput}
+            />
+            <input
+              ref={fileInput}
+              hidden
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              onChange={handleImageInput}
             />
             <small id="scan-image-help">
               PNG, JPEG o WebP, hasta {MAX_SCAN_IMAGE_BYTES / 1024 / 1024} MB.
