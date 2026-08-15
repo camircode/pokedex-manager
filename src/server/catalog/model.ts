@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export const POKEAPI_URL = 'https://pokeapi.co/api/v2'
 export const CACHE_TTL_MS = 24 * 60 * 60 * 1_000
-export const CACHE_SCHEMA_VERSION = 2
+export const CACHE_SCHEMA_VERSION = 3
 export const MAX_POKEMON_ID = 1025
 export const SPANISH_LANGUAGES = ['es', 'es-419'] as const
 
@@ -100,6 +100,7 @@ export type PokemonRecord = {
     displayName?: string
     description?: string | null
   }>
+  catalogSprite?: string | null
   sprite: string | null
   species: string
   genus: string | null
@@ -246,6 +247,7 @@ export function normalizePokemon(
       name: entry.ability.name,
       hidden: entry.is_hidden,
     })),
+    catalogSprite: pokemon.sprites.front_default,
     sprite:
       pokemon.sprites.other?.['official-artwork'].front_default ??
       pokemon.sprites.front_default,

@@ -14,4 +14,14 @@ describe('scan image preparation UI', () => {
     expect(scan).toContain('La aplicación ajusta y verifica la imagen')
     expect(scan).not.toContain('MAX_SCAN_IMAGE_BYTES')
   })
+
+  it('uses the lightweight catalog sprite without changing detail preloading', () => {
+    const catalog = readFileSync(
+      resolve(root, 'src/routes/app/pokedex/index.tsx'),
+      'utf8',
+    )
+
+    expect(catalog).toContain('pokemon.catalogSprite ?? pokemon.sprite')
+    expect(catalog).toContain('preloadPokemonArtwork(pokemon.sprite)')
+  })
 })
