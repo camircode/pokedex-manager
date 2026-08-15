@@ -15,7 +15,10 @@ const ignoredDirectories = new Set([
 const visualAssetPattern =
   /\.(?:woff2?|ttf|otf|eot|png|jpe?g|gif|webp|ico|svg)$/i
 const fontPattern = /\.(?:woff2?|ttf|otf|eot)$/i
-const allowedEvidenceAssets = ['tests/fixtures/kimi/pokemon-card.svg']
+const allowedEvidenceAssets = [
+  'docs/assets/pokedex-manager-demo.gif',
+  'tests/fixtures/kimi/pokemon-card.svg',
+]
 
 function readProjectFile(path: string) {
   return readFileSync(resolve(projectRoot, path), 'utf8')

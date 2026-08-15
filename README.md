@@ -4,6 +4,14 @@ Aplicación web adaptable para explorar PokéAPI, administrar una colección ais
 
 La aplicación funciona sin un proveedor de IA para catálogo, colección, estadísticas y asistente local. Kimi es opcional y habilita conversación natural, reconocimiento visual, hallazgos e investigación generativa.
 
+## Demostración
+
+Este recorrido muestra el resumen, el catálogo, la colección, el reconocimiento de cartas, los hallazgos, la investigación y el asistente contextual.
+
+![Demostración animada de Pokédex Manager](docs/assets/pokedex-manager-demo.gif)
+
+> La grabación reproduce el recorrido completo a velocidad doble para reducir el peso del repositorio.
+
 ## Inicio rápido con Docker
 
 Necesitas Docker Engine con Compose. Este flujo crea MongoDB, verifica los índices y arranca la aplicación con valores exclusivos para desarrollo local:
@@ -116,7 +124,7 @@ No confirmes `.env`, `.env.local`, `.env.production`, cookies, bearers ni claves
 | Área | Comportamiento |
 | --- | --- |
 | Autenticación | Registro e inicio de sesión por correo y contraseña mediante Better Auth. Sesiones persistidas en MongoDB. |
-| Catálogo | Búsqueda, filtros, orden, paginación y detalle desde PokéAPI. Caché de 24 horas con último dato conocido para una ficha vencida. |
+| Catálogo | Búsqueda; filtros por tipo, generación, habilidad y categoría Pokédex; autocompletado para listas extensas; orden por generación o cada estadística base; paginación y fichas localizadas desde PokéAPI. Caché de 24 horas con último dato conocido para una ficha vencida. |
 | Colección | Alta, edición y eliminación por cuenta; cantidad, apodo, notas, etiquetas y favorito. Todas las consultas incluyen `userId`. |
 | Resumen | Especies únicas, cantidad total, favoritos, distribución por tipo y actividad reciente calculados en servidor. |
 | Hallazgos | El servidor convierte estadísticas en hechos permitidos; Kimi solo interpreta esos hechos y debe citar sus claves. |
@@ -125,19 +133,69 @@ No confirmes `.env`, `.env.local`, `.env.production`, cookies, bearers ni claves
 | Asistente | Conserva historial por cuenta. Kimi o el modo de respaldo determinista descubren y ejecutan herramientas mediante una sesión MCP oficial en memoria. |
 | MCP HTTP | Expone herramientas y recursos de consulta con bearer y sujeto explícitos. No reutiliza la cookie del navegador ni permite escrituras de negocio; una consulta de catálogo puede actualizar la caché técnica. |
 
+## Stack tecnológico
+
+| Área | Tecnologías |
+| --- | --- |
+| Interfaz | React 19, TanStack Router, React Markdown, GSAP y HackerNoon Pixel Icon Library. |
+| Aplicación full stack | TanStack Start, Vite 8, Nitro 3 y Node.js 22. |
+| Lenguaje y contratos | TypeScript 6 y Zod 4. |
+| Autenticación | Better Auth con adaptador oficial para MongoDB. |
+| Persistencia | MongoDB 7 con índices verificados por la aplicación. |
+| IA y herramientas | Kimi mediante Moonshot API y Model Context Protocol SDK. |
+| Calidad | Vitest 4, Biome 2 y comprobación estática de TypeScript. |
+| Operación | pnpm 11, Docker Compose y GitHub Actions. |
+
 ## Arquitectura
 
-```text
-Navegador
-  -> TanStack Router y React
-  -> rutas /api de TanStack Start
-  -> autenticación y límites HTTP
-  -> servicios de aplicación
-       -> MongoDB: cuentas, colección, caché, IA e historial
-       -> PokéAPI: catálogo público
-       -> Kimi: generación opcional y no confiable
-       -> MCP: contexto de solo lectura para el asistente y clientes externos
+```mermaid
+flowchart LR
+    person["Persona usuaria"] --> browser
+    external["Cliente MCP externo"]
+
+    subgraph client["Navegador"]
+        browser["React 19<br/>TanStack Router"]
+    end
+
+    subgraph server["Aplicación Node.js con TanStack Start"]
+        routes["Rutas UI y API<br/>src/routes"]
+        boundary["Frontera HTTP<br/>sesión, origen, tamaño y Zod"]
+
+        subgraph usecases["Casos de uso"]
+            product["Catálogo, colección<br/>y estadísticas"]
+            ai["Hallazgos, investigación<br/>y reconocimiento"]
+            assistant["Asistente contextual"]
+        end
+
+        internalMcp["MCP interno<br/>InMemoryTransport"]
+        httpMcp["MCP HTTP<br/>Streamable HTTP"]
+        readonly["Puerto de solo lectura<br/>productReadonlyPort"]
+    end
+
+    subgraph systems["Datos e integraciones"]
+        mongo[("MongoDB")]
+        pokeapi["PokéAPI"]
+        kimi["Kimi<br/>opcional y no confiable"]
+    end
+
+    browser --> routes --> boundary
+    boundary --> product
+    boundary --> ai
+    boundary --> assistant
+
+    product --> mongo
+    product --> pokeapi
+    ai --> mongo
+    ai --> pokeapi
+    ai <-->|"generación; respuesta validada"| kimi
+    assistant --> mongo
+    assistant -->|"orquestación opcional"| kimi
+    assistant --> internalMcp --> readonly --> product
+
+    external -->|"bearer + sujeto explícito"| httpMcp --> readonly
 ```
+
+Las rutas actúan como adaptadores: aplican las políticas HTTP antes de invocar los casos de uso. El asistente y los clientes externos acceden al contexto mediante la misma superficie MCP de solo lectura, por lo que no existe una ruta paralela que evite las reglas del producto. Kimi nunca se considera autoridad; sus salidas pasan por contratos y validaciones de dominio antes de persistirse o mostrarse.
 
 La arquitectura separa transporte, casos de uso e integraciones sin imponer capas vacías:
 
@@ -343,40 +401,6 @@ docker compose --env-file .env.production -f compose.production.yml up -d --no-b
 ```
 
 Para revertir, restaura el valor anterior de `APP_IMAGE` en `.env.production` y ejecuta `up -d --no-build`. Si las imágenes se almacenan en un registro, ejecuta `pull` antes de `up`. `db:init` solo administra índices; una futura migración destructiva de documentos debe incluir su propio procedimiento reversible antes de incorporarse.
-
-## Publicación del repositorio
-
-Antes de publicar una revisión:
-
-1. Revisa `git status --short` y confirma que no aparezcan archivos de entorno ni credenciales.
-2. Confirma que los cambios propios respeten AGPLv3 y que las dependencias conserven sus licencias correspondientes.
-3. Habilita avisos privados según `SECURITY.md`.
-4. Ejecuta `pnpm check`, `pnpm audit:prod` y la prueba de humo de Docker.
-
-Publicación inicial:
-
-```bash
-git add .
-git commit -m "feat: prepare production-ready pokedex manager"
-git remote add origin https://github.com/camircode/pokedex-manager.git
-git push -u origin main
-```
-
-No ejecutes esos comandos hasta revisar el contenido que se publicará. Los artefactos de OpenSpec forman parte del contexto técnico del proyecto; los documentos de evaluación y metadatos locales permanecen excluidos del repositorio público.
-
-## Límites conocidos
-
-- PokéAPI se consulta bajo demanda; no se realiza una copia masiva.
-- La lista general necesita PokéAPI aunque existan fichas individuales cacheadas.
-- Kimi no tiene cuota de producto persistida. Un despliegue público debe imponer límites en el proxy o plataforma.
-- El asistente puede dejar una conversación vacía si falla el primer envío después de crearla; no se presenta como mensaje exitoso.
-- Un corte después de persistir una respuesta y antes del evento final puede hacer que un reintento duplique el turno. La aplicación todavía no implementa claves de idempotencia para mensajes.
-- Cerrar una vista no cancela todavía una operación Kimi ya iniciada en el servidor; el timeout del adaptador y los límites del proxy acotan su duración.
-- Las sesiones MCP HTTP están en memoria y requieren afinidad con varias réplicas.
-- La comprobación de salud valida MongoDB; la prueba de humo posterior debe comprobar también autenticación y configuración opcional.
-- Las imágenes no se persisten, pero el proyecto no afirma eliminar EXIF u otros metadatos antes de enviarlas a Kimi.
-- Las tipografías comerciales nombradas en el sistema visual no se distribuyen. Solo se activan si el despliegue aporta archivos y licencias válidos.
-- No se incluyen logotipos ni activos de marca con licencia no verificada.
 
 ## Documentación relacionada
 
