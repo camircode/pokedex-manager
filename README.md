@@ -203,8 +203,11 @@ La arquitectura separa transporte, casos de uso e integraciones sin imponer capa
 | --- | --- |
 | `src/routes` | UI y manejadores HTTP. Autentican, validan el origen, limitan cuerpos y traducen errores. |
 | `src/server` | Casos de uso de catálogo, colección, hallazgos, investigación, reconocimiento y asistente. |
+| `src/server/assistant` | Separa contratos públicos, persistencia conversacional, traducción de contexto MCP, enrutamiento local y orquestación Kimi; `assistant.ts` solo compone esas piezas. |
 | `src/server/catalog` | Contratos y normalización de PokéAPI, cliente REST y consultas GraphQL separados de la persistencia del caso de uso. |
 | `src/server/integrations` | Adaptadores para Better Auth, Kimi y MCP. Ningún cliente importa secretos. |
+| `src/server/integrations/kimi` | Comparte contratos y transporte Moonshot, pero mantiene adaptadores independientes para visión, investigación, hallazgos y chat. |
+| `src/server/integrations/mcp` | Separa la superficie MCP, el puerto de producto, el cliente en memoria, el endpoint Streamable HTTP y su política HTTP/bearer. |
 | `src/server/db` | Conexión compartida, definición y verificación de índices MongoDB. |
 | `src/lib` | Contratos reutilizables seguros para cliente y servidor, sin acceso a secretos. |
 | `src/styles` | Hojas de estilo ordenadas por fundamento, superficie funcional y adaptación responsive; `src/styles.css` conserva el orden explícito de la cascada. |
