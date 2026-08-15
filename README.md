@@ -129,7 +129,7 @@ No confirmes `.env`, `.env.local`, `.env.production`, cookies, bearers ni claves
 | Resumen | Especies únicas, cantidad total, favoritos, distribución por tipo y actividad reciente calculados en servidor. |
 | Hallazgos | El servidor convierte estadísticas en hechos permitidos; Kimi solo interpreta esos hechos y debe citar sus claves. |
 | Investigación | Kimi propone narrativa y objetivos entre candidatos controlados. El servidor valida criterios y calcula el progreso sin escribir durante las lecturas. |
-| Reconocimiento | Valida PNG, JPEG o WebP hasta 5 MB, exige consentimiento, consulta Kimi y contrasta ID y nombre con PokéAPI. Nunca agrega sin confirmación. |
+| Reconocimiento | Prepara y optimiza la imagen en el navegador, valida su contenido, exige consentimiento, consulta Kimi y contrasta ID y nombre con PokéAPI. Nunca agrega sin confirmación. |
 | Asistente | Conserva historial por cuenta. Kimi o el modo de respaldo determinista descubren y ejecutan herramientas mediante una sesión MCP oficial en memoria. |
 | MCP HTTP | Expone herramientas y recursos de consulta con bearer y sujeto explícitos. No reutiliza la cookie del navegador ni permite escrituras de negocio; una consulta de catálogo puede actualizar la caché técnica. |
 
@@ -203,9 +203,11 @@ La arquitectura separa transporte, casos de uso e integraciones sin imponer capa
 | --- | --- |
 | `src/routes` | UI y manejadores HTTP. Autentican, validan el origen, limitan cuerpos y traducen errores. |
 | `src/server` | Casos de uso de catálogo, colección, hallazgos, investigación, reconocimiento y asistente. |
+| `src/server/catalog` | Contratos y normalización de PokéAPI, cliente REST y consultas GraphQL separados de la persistencia del caso de uso. |
 | `src/server/integrations` | Adaptadores para Better Auth, Kimi y MCP. Ningún cliente importa secretos. |
 | `src/server/db` | Conexión compartida, definición y verificación de índices MongoDB. |
 | `src/lib` | Contratos reutilizables seguros para cliente y servidor, sin acceso a secretos. |
+| `src/styles` | Hojas de estilo ordenadas por fundamento, superficie funcional y adaptación responsive; `src/styles.css` conserva el orden explícito de la cascada. |
 | `tests/unit` | Reglas puras, validaciones y casos límite sin infraestructura. |
 | `tests/integration` | Persistencia, autenticación, aislamiento por cuenta y flujos con MongoDB real. |
 | `tests/contracts` | Toolchain, Docker, UI, MCP y límites documentales. |
