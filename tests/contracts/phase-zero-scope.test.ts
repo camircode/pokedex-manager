@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -53,7 +53,7 @@ describe('contrato de alcance del producto', () => {
     const visualAssets = listProjectFiles('.').filter((file) =>
       visualAssetPattern.test(file),
     )
-    expect(existsSync(resolve(projectRoot, 'nuevoexamen.pdf'))).toBe(true)
+    expect(readProjectFile('.gitignore')).toMatch(/^\*\.pdf$/m)
     expect(visualAssets.filter((file) => fontPattern.test(file))).toEqual([])
     expect(visualAssets).toEqual(allowedEvidenceAssets)
   })
