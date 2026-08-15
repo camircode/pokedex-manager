@@ -8,6 +8,8 @@ La aplicación funciona sin un proveedor de IA para catálogo, colección, estad
 
 Este recorrido muestra el resumen, el catálogo, la colección, el reconocimiento de cartas, los hallazgos, la investigación y el asistente contextual.
 
+**Aplicación desplegada:** [pokedex.camir.tech](https://pokedex.camir.tech)
+
 ![Demostración animada de Pokédex Manager](docs/assets/pokedex-manager-demo.gif)
 
 > La grabación reproduce el recorrido completo a velocidad doble para reducir el peso del repositorio.
