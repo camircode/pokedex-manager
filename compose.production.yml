@@ -1,0 +1,37 @@
+services:
+  app:
+    image: ${APP_IMAGE:-pokedex-manager:local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:3000:3000'
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      MONGO_MODE: atlas
+      MONGO_ATLAS_OPT_IN: 'true'
+      MONGO_ATLAS_URI: ${MONGO_ATLAS_URI:?MONGO_ATLAS_URI es obligatoria}
+      MONGO_ATLAS_USERNAME: ${MONGO_ATLAS_USERNAME:?MONGO_ATLAS_USERNAME es obligatorio}
+      MONGO_ATLAS_PASSWORD: ${MONGO_ATLAS_PASSWORD:?MONGO_ATLAS_PASSWORD es obligatoria}
+      MONGO_DB_NAME: ${MONGO_DB_NAME:-pokedex}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET es obligatorio}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:?BETTER_AUTH_URL es obligatoria}
+      MCP_BEARER_TOKEN: ${MCP_BEARER_TOKEN:-}
+      MCP_SUBJECT: ${MCP_SUBJECT:-}
+      KIMI_LIVE_ENABLED: ${KIMI_LIVE_ENABLED:-false}
+      MOONSHOT_API_KEY: ${MOONSHOT_API_KEY:-}
+      KIMI_TIMEOUT_MS: ${KIMI_TIMEOUT_MS:-10000}
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s

@@ -1,0 +1,54 @@
+services:
+  mongo:
+    image: mongo:7.0
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:27017:27017'
+    environment:
+      MONGO_INITDB_DATABASE: pokedex
+    volumes:
+      - pokedex-mongo-data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', "db.adminCommand('ping').ok"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:3000:3000'
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      MONGO_MODE: local
+      MONGO_URI: mongodb://mongo:27017
+      MONGO_DB_NAME: pokedex
+      BETTER_AUTH_SECRET: local-compose-only-change-outside-development-2026
+      BETTER_AUTH_URL: http://localhost:3000
+      MCP_BEARER_TOKEN: local-compose-mcp-token-change-me-2026
+      MCP_SUBJECT: local-mcp
+      KIMI_LIVE_ENABLED: ${KIMI_LIVE_ENABLED:-false}
+      MOONSHOT_API_KEY: ${MOONSHOT_API_KEY:-}
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 4s
+      retries: 24
+      start_period: 15s
+
+volumes:
+  pokedex-mongo-data:

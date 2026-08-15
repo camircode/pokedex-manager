@@ -1,0 +1,86 @@
+schema: spec-driven
+project: pokedex_manager
+language: es-neutral
+artifact_store: hybrid
+package_manager:
+  name: pnpm
+  policy: "Uso exclusivo: no usar npm, yarn ni bun bajo ninguna circunstancia."
+source_of_requirements:
+  - nuevoexamen.pdf
+git:
+  repository_present: false
+  note: "El directorio todavía no es un repositorio Git."
+stack:
+  materialized: false
+  detected: "No hay aplicación, manifiesto, dependencias ni configuración de stack materializada."
+  planned_context: "Existe un plan persistido para evaluar TanStack Start, MongoDB, Better Auth, PokéAPI, Kimi y MCP; no se trata como stack implementado durante init."
+strict_tdd: false
+context: |
+  PokéDex Manager parte de un directorio sin aplicación ni repositorio Git.
+  El único insumo funcional detectado es nuevoexamen.pdf: autenticación, PokéAPI,
+  persistencia, interfaz responsive y bonus opcionales de LMM, MCP e IA.
+  La calidad de código, la arquitectura, la documentación y la funcionalidad son criterios de evaluación.
+  Todos los artefactos y textos para personas usan español neutral; los identificadores técnicos pueden usar inglés.
+  El gestor de paquetes obligatorio es pnpm y no se debe usar npm, yarn ni bun.
+testing:
+  strict_tdd: false
+  detected: "2026-08-13"
+  reason: "No existe aplicación, manifiesto ni runner de pruebas detectable; Strict TDD queda deshabilitado hasta que se configure uno."
+  test_runner:
+    available: false
+    command: null
+    framework: null
+  test_layers:
+    unit:
+      available: false
+      tool: null
+    integration:
+      available: false
+      tool: null
+    e2e:
+      available: false
+      tool: null
+  coverage:
+    available: false
+    command: null
+  quality_tools:
+    linter:
+      available: false
+      command: null
+    type_checker:
+      available: false
+      command: null
+    formatter:
+      available: false
+      command: null
+workflow:
+  execution_mode: auto
+  delivery_strategy: auto-chain
+  review_budget_lines: 5000
+rules:
+  global:
+    - "No afirmar tecnologías como implementadas hasta detectarlas en el repositorio."
+    - "Mantener pnpm como único gestor de paquetes; no ejecutar npm, yarn ni bun."
+    - "Priorizar calidad, seguridad, accesibilidad, pruebas valiosas y documentación sobre cantidad de funcionalidades."
+    - "Redactar artefactos y textos destinados a personas en español neutral."
+  proposal:
+    - "Incluir alcance, fuera de alcance, riesgos y plan de reversión para cambios riesgosos."
+  specs:
+    - "Usar escenarios Given/When/Then y requisitos con MUST, SHALL, SHOULD o MAY cuando corresponda."
+  design:
+    - "Documentar decisiones arquitectónicas, límites de responsabilidad y sus razones."
+    - "Incluir diagramas de secuencia para flujos complejos."
+  tasks:
+    - "Agrupar tareas por fase y mantener cada unidad completable y verificable."
+  apply:
+    tdd: false
+    test_command: ""
+    guidelines:
+      - "No implementar la aplicación ni cambios funcionales durante la fase init."
+      - "Cuando exista runner, agregar pruebas junto con la unidad de comportamiento que verifican."
+  verify:
+    test_command: ""
+    build_command: ""
+    coverage_threshold: 0
+  archive:
+    - "Advertir antes de fusionar deltas destructivos y conservar la trazabilidad."

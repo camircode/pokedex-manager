@@ -1,0 +1,13 @@
+.git
+.codegraph
+.atl
+.tanstack
+.output
+dist
+node_modules
+coverage
+openspec
+tests
+*.pdf
+.env*
+!.env.example

@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      mongo:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ ping: 1 }).ok'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      MONGO_MODE: local
+      MONGO_URI: mongodb://127.0.0.1:27017
+      MONGO_DB_NAME: pokedex_ci
+      MONGO_TEST_URI: mongodb://127.0.0.1:27017
+    steps:
+      - name: Obtener código
+        uses: actions/checkout@v4
+
+      - name: Configurar pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.20.0
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: pnpm
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Auditar dependencias
+        run: pnpm audit:prod
+
+      - name: Inicializar índices
+        run: pnpm db:init
+
+      - name: Analizar código
+        run: pnpm lint
+
+      - name: Comprobar formato
+        run: pnpm format:check
+
+      - name: Comprobar tipos
+        run: pnpm typecheck
+
+      - name: Ejecutar pruebas
+        run: pnpm test
+
+      - name: Construir aplicación
+        run: pnpm build

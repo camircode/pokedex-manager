@@ -1,0 +1,58 @@
+{
+  "name": "pokedex-manager",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "packageManager": "pnpm@11.20.0",
+  "engines": {
+    "node": ">=22.12.0",
+    "pnpm": ">=11.20.0"
+  },
+  "scripts": {
+    "dev": "pnpm exec vite dev --port 3000",
+    "generate-routes": "pnpm exec tsr generate",
+    "build": "pnpm exec vite build",
+    "audit:prod": "pnpm audit --prod --audit-level high",
+    "start": "node .output/server/index.mjs",
+    "preview": "pnpm exec vite preview",
+    "smoke": "node scripts/smoke.mjs",
+    "bootstrap": "node scripts/bootstrap-core.mjs",
+    "db:init": "tsx scripts/db-init.ts",
+    "lint": "pnpm exec biome lint .",
+    "format": "pnpm exec biome format . --write",
+    "format:check": "pnpm exec biome check . --formatter-enabled=true --linter-enabled=false --assist-enabled=false",
+    "typecheck": "pnpm generate-routes && pnpm exec tsc --noEmit",
+    "test": "pnpm exec vitest run",
+    "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build"
+  },
+  "dependencies": {
+    "@better-auth/mongo-adapter": "1.6.28",
+    "@fontsource/open-sans": "^5.3.0",
+    "@gsap/react": "^2.1.2",
+    "@hackernoon/pixel-icon-library": "^1.1.0",
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "@tanstack/react-router": "1.170.27",
+    "@tanstack/react-start": "1.168.44",
+    "better-auth": "1.6.28",
+    "gsap": "^3.15.0",
+    "mongodb": "7.5.0",
+    "nitro": "3.0.260610-beta",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.8",
+    "@tanstack/router-cli": "1.167.28",
+    "@types/node": "22.20.1",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "@vitejs/plugin-react": "6.0.5",
+    "tsx": "4.23.12",
+    "typescript": "6.0.3",
+    "vite": "8.2.1",
+    "vitest": "4.1.10"
+  }
+}
