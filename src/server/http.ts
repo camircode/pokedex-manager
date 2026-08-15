@@ -17,7 +17,11 @@ export function assertTrustedMutation(request: Request) {
   }
 
   const origin = request.headers.get('origin')
-  if (origin !== null && origin !== new URL(request.url).origin) {
+  const requestOrigin = new URL(request.url).origin
+  const publicUrl = process.env.BETTER_AUTH_URL
+  const publicOrigin =
+    publicUrl === undefined ? undefined : new URL(publicUrl).origin
+  if (origin !== null && origin !== requestOrigin && origin !== publicOrigin) {
     throw requestError('Origen de solicitud no permitido.', 403)
   }
 }
