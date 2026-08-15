@@ -303,6 +303,8 @@ Las pruebas de integración requieren MongoDB real en `mongodb://127.0.0.1:27017
 
 La configuración productiva presupone una máquina Linux con Docker, un dominio, un proxy inverso con TLS y MongoDB Atlas. No publica MongoDB ni incorpora secretos en la imagen.
 
+Para un entorno no productivo administrado por Dokploy, `compose.dokploy.yml` ejecuta MongoDB autenticado dentro del mismo stack y conserva sus datos en un volumen. Configura `MONGO_USERNAME`, `MONGO_PASSWORD`, `BETTER_AUTH_SECRET` y `BETTER_AUTH_URL` en Dokploy; activa Kimi con `KIMI_LIVE_ENABLED=true` y `MOONSHOT_API_KEY`. El servicio web solo expone el puerto `3000` a la red interna para que el dominio y TLS queden a cargo de Dokploy.
+
 ### 1. Preparar Atlas
 
 1. Crea un proyecto y un clúster de Atlas.

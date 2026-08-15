@@ -1,0 +1,59 @@
+services:
+  mongo:
+    image: mongo:7.0
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: pokedex
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:?MONGO_USERNAME is required}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:?MONGO_PASSWORD is required}
+    volumes:
+      - pokedex-mongo-data:/data/db
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'mongosh --quiet --username "$$MONGO_INITDB_ROOT_USERNAME" --password "$$MONGO_INITDB_ROOT_PASSWORD" --authenticationDatabase admin --eval "quit(db.adminCommand({ ping: 1 }).ok ? 0 : 2)"',
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    expose:
+      - '3000'
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      MONGO_MODE: local
+      MONGO_URI: mongodb://${MONGO_USERNAME:?MONGO_USERNAME is required}:${MONGO_PASSWORD:?MONGO_PASSWORD is required}@mongo:27017/?authSource=admin
+      MONGO_DB_NAME: pokedex
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:?BETTER_AUTH_URL is required}
+      MCP_BEARER_TOKEN: ''
+      MCP_SUBJECT: ''
+      KIMI_LIVE_ENABLED: ${KIMI_LIVE_ENABLED:-false}
+      MOONSHOT_API_KEY: ${MOONSHOT_API_KEY:-}
+      KIMI_TIMEOUT_MS: ${KIMI_TIMEOUT_MS:-10000}
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 4s
+      retries: 24
+      start_period: 15s
+
+volumes:
+  pokedex-mongo-data:

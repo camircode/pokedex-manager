@@ -41,4 +41,15 @@ describe('compose runtime contract', () => {
     expect(compose).toMatch(/BETTER_AUTH_SECRET: \$\{BETTER_AUTH_SECRET:\?/)
     expect(compose).toMatch(/BETTER_AUTH_URL: \$\{BETTER_AUTH_URL:\?/)
   })
+
+  it('defines an authenticated persistent Mongo stack for Dokploy', () => {
+    const compose = readFileSync(resolve(root, 'compose.dokploy.yml'), 'utf8')
+    expect(compose).toContain('MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:?')
+    expect(compose).toContain('authSource=admin')
+    expect(compose).toContain('BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?')
+    expect(compose).toContain("MCP_BEARER_TOKEN: ''")
+    expect(compose).toContain('pokedex-mongo-data:/data/db')
+    expect(compose).toContain("- '3000'")
+    expect(compose).not.toMatch(/^\s+ports:/m)
+  })
 })
