@@ -6,7 +6,7 @@ import { apiError } from '@/server/http'
 export async function pokemonHandler(pokemonId: string) {
   try {
     return Response.json(
-      await (await getCatalogService()).getPokemon(
+      await (await getCatalogService()).getPokemonDetail(
         pokemonIdentifierSchema.parse(pokemonId),
       ),
     )

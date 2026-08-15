@@ -67,6 +67,13 @@ const speciesPayload = {
     { genus: 'Mouse Pokémon', language: { name: 'en' } },
     { genus: 'Pokémon Ratón', language: { name: 'es' } },
   ],
+  names: [{ name: 'Pikachu', language: { name: 'es' } }],
+  flavor_text_entries: [
+    {
+      flavor_text: 'Almacena electricidad en las bolsas de sus mejillas.',
+      language: { name: 'es' },
+    },
+  ],
 }
 
 function pokemonRecord(): PokemonRecord {
@@ -140,7 +147,10 @@ describe('PokéAPI normalization and stale fallback', () => {
     expect(first).toMatchObject({
       pokemonId: 25,
       name: 'pikachu',
+      displayName: 'Pikachu',
       types: ['electric'],
+      genus: 'Pokémon Ratón',
+      description: 'Almacena electricidad en las bolsas de sus mejillas.',
       generation: 'generation-i',
       sprite: 'https://img.example.test/pikachu-art.png',
     })

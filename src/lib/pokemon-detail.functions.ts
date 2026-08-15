@@ -19,7 +19,7 @@ export const loadPokemonDetail = createServerFn({ method: 'GET' })
   })
   .handler(async ({ data }) => {
     try {
-      return await (await getCatalogService()).getPokemon(data.pokemonId)
+      return await (await getCatalogService()).getPokemonDetail(data.pokemonId)
     } catch (error) {
       const status =
         error instanceof Error && 'status' in error

@@ -60,7 +60,7 @@ describe('Pokedex URL and responsive UI contracts', () => {
     const pokedex = read('src/routes/app/pokedex/index.tsx')
     expect(catalogQuerySchema.parse({})).toEqual(catalogSearchDefaults)
     expect(buildCatalogApiUrl(catalogSearchDefaults)).toBe(
-      '/api/catalog?query=&type=&generation=&sort=id-asc&page=1&limit=20',
+      '/api/catalog?query=&type=&generation=&ability=&category=&sort=id-asc&page=1&limit=20',
     )
     expect(pokedex).toMatch(/validateSearch/)
     expect(pokedex).toContain(
@@ -211,7 +211,8 @@ describe('Pokedex URL and responsive UI contracts', () => {
     expect(detailServerFunction).toContain("createServerFn({ method: 'GET' })")
     expect(detailServerFunction).toContain('getCatalogService()')
     expect(catalogServerFunction).toContain("createServerFn({ method: 'GET' })")
-    expect(catalogServerFunction).toContain('getCatalogService()).list(data)')
+    expect(catalogServerFunction).toContain('service.list(data)')
+    expect(catalogServerFunction).toContain('service.listFilterOptions()')
     expect(list).toContain('loaderDeps: ({ search }) => search')
     expect(list).toContain('Route.useLoaderData()')
     expect(list).not.toContain('useApi<')
