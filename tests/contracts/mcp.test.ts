@@ -495,10 +495,22 @@ describe('MCP Streamable HTTP runtime contract', () => {
   })
 
   it('uses only a bounded, injectable read-only boundary and no legacy Better Auth MCP plugin', () => {
-    const mcpSource = readFileSync(
-      new URL('../../src/server/integrations/mcp.ts', import.meta.url),
-      'utf8',
-    )
+    const mcpSource = [
+      'mcp.ts',
+      'mcp/client.ts',
+      'mcp/contracts.ts',
+      'mcp/endpoint.ts',
+      'mcp/http.ts',
+      'mcp/product-port.ts',
+      'mcp/surface.ts',
+    ]
+      .map((path) =>
+        readFileSync(
+          new URL(`../../src/server/integrations/${path}`, import.meta.url),
+          'utf8',
+        ),
+      )
+      .join('\n')
     const routeSource = readFileSync(
       new URL('../../src/routes/api/mcp.ts', import.meta.url),
       'utf8',
