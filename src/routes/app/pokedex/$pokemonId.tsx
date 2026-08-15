@@ -6,6 +6,8 @@ import { ErrorState, LoadingState } from '@/components/status'
 import {
   catalogQuerySchema,
   catalogSearchDefaults,
+  pokemonStatLabel,
+  pokemonTypeLabel,
   pokemonDetailSearchSchema,
 } from '@/lib/catalog-query'
 import { loadPokemonDetail } from '@/lib/pokemon-detail.functions'
@@ -53,6 +55,7 @@ function PokemonDetail() {
   const pokemon = Route.useLoaderData()
   const search = Route.useSearch()
   const transitionActive = useActivePokemonTransition(pokemon.pokemonId)
+  const name = pokemon.displayName ?? displayName(pokemon.name)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
 
@@ -87,7 +90,7 @@ function PokemonDetail() {
             #{String(pokemon.pokemonId).padStart(4, '0')}
           </p>
           <h1 style={pokemonTransitionStyle(transitionActive, 'name')}>
-            {displayName(pokemon.name)}
+            {name}
           </h1>
           <p className="detail-taxonomy">
             <span>{pokemon.genus ?? 'Especie Pokémon'}</span>
@@ -100,10 +103,13 @@ function PokemonDetail() {
           >
             {pokemon.types.map((type) => (
               <span className={`type type-${type}`} key={type}>
-                {displayName(type)}
+                {pokemonTypeLabel(type)}
               </span>
             ))}
           </div>
+          {pokemon.description && (
+            <p className="detail-description">{pokemon.description}</p>
+          )}
         </div>
         {pokemon.sprite && (
           <div
@@ -112,7 +118,7 @@ function PokemonDetail() {
           >
             <img
               src={pokemon.sprite}
-              alt={`Ilustración oficial de ${displayName(pokemon.name)}`}
+              alt={`Ilustración oficial de ${name}`}
               width="260"
               height="260"
             />
@@ -137,7 +143,7 @@ function PokemonDetail() {
           <dl className="detail-list">
             {pokemon.stats.map((stat) => (
               <div key={stat.name}>
-                <dt>{displayName(stat.name)}</dt>
+                <dt>{pokemonStatLabel(stat.name)}</dt>
                 <dd>{stat.value}</dd>
               </div>
             ))}
@@ -145,11 +151,17 @@ function PokemonDetail() {
         </section>
         <section>
           <h2>Habilidades</h2>
-          <ul className="plain-list">
+          <ul className="ability-list">
             {pokemon.abilities.map((ability) => (
               <li key={ability.name}>
-                {displayName(ability.name)}{' '}
-                {ability.hidden && <small>Oculta</small>}
+                <div>
+                  <strong>{ability.displayName}</strong>
+                  {ability.hidden && <small>Habilidad oculta</small>}
+                </div>
+                <p>
+                  {ability.description ??
+                    'PokéAPI no ofrece una descripción en español para esta habilidad.'}
+                </p>
               </li>
             ))}
           </ul>

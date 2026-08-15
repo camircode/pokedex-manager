@@ -34,7 +34,7 @@ El diferenciador principal de Pokédex Manager es la integración verificable de
 
 ### Capacidades implementadas
 
-- Explorar PokéAPI mediante catálogo, búsqueda, filtros, paginación y detalle.
+- Explorar PokéAPI mediante catálogo, búsqueda, filtros por tipo, generación, habilidad y categoría Pokédex, orden global por generación o estadísticas base, paginación y fichas con nombres y descripciones disponibles en español. Habilidad y categoría usan autocompletado validado por la lista del proveedor.
 - Mantener una colección personal con autenticación, aislamiento por usuario, cantidad, favoritos, apodo, notas, etiquetas y eliminación.
 - Mostrar un dashboard con resumen y estadísticas deterministas.
 - Convertir estadísticas de colección en hechos verificables y permitir que Kimi genere hallazgos seleccionando únicamente claves permitidas; cada interpretación muestra la evidencia que la sustenta y se guarda por versión de colección.

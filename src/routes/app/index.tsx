@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 
 import { EmptyState, ErrorState, LoadingState } from '@/components/status'
-import { catalogSearchDefaults } from '@/lib/catalog-query'
+import { catalogSearchDefaults, pokemonTypeLabel } from '@/lib/catalog-query'
 import { displayName, useApi } from '@/lib/ui'
 import type { DashboardStats } from '@/server/collection'
 
@@ -60,7 +60,7 @@ function Dashboard() {
                   const percentage = Math.round(
                     (item.count / data.totalQuantity) * 100,
                   )
-                  const typeName = displayName(item.type)
+                  const typeName = pokemonTypeLabel(item.type)
                   return (
                     <div className="type-presence" key={item.type}>
                       <div className="type-presence-caption">

@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { EmptyState, ErrorState, LoadingState } from '@/components/status'
+import { pokemonTypeLabel } from '@/lib/catalog-query'
 import {
   apiMutation,
   displayName,
@@ -119,7 +120,7 @@ function CollectionEntryForm({
           <div className="type-list">
             {entry.pokemon.types.map((type) => (
               <span className={`type type-${type}`} key={type}>
-                {displayName(type)}
+                {pokemonTypeLabel(type)}
               </span>
             ))}
           </div>

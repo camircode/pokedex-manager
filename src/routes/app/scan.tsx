@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 
 import { AiProcess, type AiProcessStep } from '@/components/ai-process'
 import { ErrorState } from '@/components/status'
+import { pokemonTypeLabel } from '@/lib/catalog-query'
 import { consumeEventStream } from '@/lib/event-stream'
 import { MAX_SCAN_IMAGE_BYTES, validateScanImage } from '@/lib/image-validation'
 import { apiMutation, displayName } from '@/lib/ui'
@@ -248,7 +249,7 @@ function Scan() {
             <div className="type-list">
               {candidate.types.map((type) => (
                 <span className={`type type-${type}`} key={type}>
-                  {displayName(type)}
+                  {pokemonTypeLabel(type)}
                 </span>
               ))}
             </div>

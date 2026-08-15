@@ -6,6 +6,7 @@ import {
   CATALOG_SORTS,
   catalogQuerySchema,
   catalogSearchDefaults,
+  pokemonTypeLabel,
   POKEMON_GENERATIONS,
   POKEMON_TYPES,
 } from '@/lib/catalog-query'
@@ -18,7 +19,21 @@ const sortLabels = {
   'id-desc': 'Número: mayor a menor',
   'name-asc': 'Nombre: A a Z',
   'name-desc': 'Nombre: Z a A',
-} as const
+  'generation-asc': 'Generación: antigua a reciente',
+  'generation-desc': 'Generación: reciente a antigua',
+  'hp-asc': 'Puntos de salud: menor a mayor',
+  'hp-desc': 'Puntos de salud: mayor a menor',
+  'attack-asc': 'Ataque: menor a mayor',
+  'attack-desc': 'Ataque: mayor a menor',
+  'defense-asc': 'Defensa: menor a mayor',
+  'defense-desc': 'Defensa: mayor a menor',
+  'special-attack-asc': 'Ataque especial: menor a mayor',
+  'special-attack-desc': 'Ataque especial: mayor a menor',
+  'special-defense-asc': 'Defensa especial: menor a mayor',
+  'special-defense-desc': 'Defensa especial: mayor a menor',
+  'speed-asc': 'Velocidad: menor a mayor',
+  'speed-desc': 'Velocidad: mayor a menor',
+} as const satisfies Record<(typeof CATALOG_SORTS)[number], string>
 
 export const Route = createFileRoute('/app/pokedex/')({
   validateSearch: (search) => catalogQuerySchema.parse(search),
@@ -41,15 +56,49 @@ function generationLabel(generation: string) {
   return `Generación ${generation.replace('generation-', '').toUpperCase()}`
 }
 
+function resolveAutocompleteOption(
+  input: HTMLInputElement,
+  options: Array<{ value: string; label: string }>,
+  message: string,
+) {
+  const entered = input.value.trim()
+  input.setCustomValidity('')
+  if (entered === '') return ''
+  const selected = options.find(
+    (option) =>
+      option.value.localeCompare(entered, 'es', { sensitivity: 'base' }) ===
+        0 ||
+      option.label.localeCompare(entered, 'es', { sensitivity: 'base' }) === 0,
+  )
+  if (selected !== undefined) return selected.value
+  input.setCustomValidity(message)
+  input.reportValidity()
+  return undefined
+}
+
 function Pokedex() {
   const search = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
   const catalog = Route.useLoaderData()
   const filtersRef = useResponsiveDetails()
+  const { abilities: abilityOptions, categories: categoryOptions } =
+    catalog.filterOptions
+  const selectedAbility = abilityOptions.find(
+    (ability) => ability.value === search.ability,
+  )
+  const selectedCategory = categoryOptions.find(
+    (category) => category.value === search.category,
+  )
   const activeFilters = [
     search.query ? `Búsqueda: “${search.query}”` : '',
-    search.type ? `Tipo: ${displayName(search.type)}` : '',
+    search.type ? `Tipo: ${pokemonTypeLabel(search.type)}` : '',
     search.generation ? generationLabel(search.generation) : '',
+    search.ability
+      ? `Habilidad: ${selectedAbility?.label ?? displayName(search.ability)}`
+      : '',
+    search.category
+      ? `Categoría: ${selectedCategory?.label ?? search.category}`
+      : '',
     search.sort !== 'id-asc' ? sortLabels[search.sort] : '',
   ].filter(Boolean)
 
@@ -82,12 +131,27 @@ function Pokedex() {
           className="filter-grid"
           onSubmit={(event) => {
             event.preventDefault()
-            const data = new FormData(event.currentTarget)
+            const form = event.currentTarget
+            const data = new FormData(form)
+            const ability = resolveAutocompleteOption(
+              form.elements.namedItem('ability') as HTMLInputElement,
+              abilityOptions,
+              'Selecciona una habilidad de la lista.',
+            )
+            if (ability === undefined) return
+            const category = resolveAutocompleteOption(
+              form.elements.namedItem('category') as HTMLInputElement,
+              categoryOptions,
+              'Selecciona una categoría de la lista.',
+            )
+            if (category === undefined) return
             void navigate({
               search: catalogQuerySchema.parse({
                 query: data.get('query'),
                 type: data.get('type'),
                 generation: data.get('generation'),
+                ability,
+                category,
                 sort: data.get('sort'),
                 limit: data.get('limit'),
                 page: 1,
@@ -113,10 +177,48 @@ function Pokedex() {
               <option value="">Todos los tipos</option>
               {POKEMON_TYPES.map((type) => (
                 <option value={type} key={type}>
-                  {displayName(type)}
+                  {pokemonTypeLabel(type)}
                 </option>
               ))}
             </select>
+          </label>
+          <label>
+            Habilidad
+            <input
+              name="ability"
+              list="catalog-abilities"
+              defaultValue={
+                selectedAbility?.label ??
+                (search.ability ? displayName(search.ability) : '')
+              }
+              placeholder="Ej.: Electricidad Estática"
+              autoComplete="off"
+            />
+            <datalist id="catalog-abilities">
+              {abilityOptions.map((ability) => (
+                <option value={ability.label} key={ability.value} />
+              ))}
+            </datalist>
+          </label>
+          <label>
+            Categoría Pokédex
+            <input
+              name="category"
+              list="catalog-categories"
+              defaultValue={
+                selectedCategory?.label ??
+                (search.category
+                  ? search.category.replace(/^Pokémon\s+/u, '')
+                  : '')
+              }
+              placeholder="Ej.: Ratón o Globo"
+              autoComplete="off"
+            />
+            <datalist id="catalog-categories">
+              {categoryOptions.map((category) => (
+                <option value={category.label} key={category.value} />
+              ))}
+            </datalist>
           </label>
           <label>
             Generación
@@ -253,6 +355,7 @@ type PokemonRowProps = {
 
 function PokemonRow({ pokemon, search }: PokemonRowProps) {
   const transitionActive = useActivePokemonTransition(pokemon.pokemonId)
+  const name = pokemon.displayName ?? displayName(pokemon.name)
 
   return (
     <div className="table-row">
@@ -279,7 +382,7 @@ function PokemonRow({ pokemon, search }: PokemonRowProps) {
           </span>
         )}
         <strong style={pokemonTransitionStyle(transitionActive, 'name')}>
-          {displayName(pokemon.name)}
+          {name}
         </strong>
       </span>
       <span className="pokemon-metadata">
@@ -290,7 +393,7 @@ function PokemonRow({ pokemon, search }: PokemonRowProps) {
         >
           {pokemon.types.map((type) => (
             <span className={`type type-${type}`} key={type}>
-              {displayName(type)}
+              {pokemonTypeLabel(type)}
             </span>
           ))}
         </span>
@@ -303,7 +406,7 @@ function PokemonRow({ pokemon, search }: PokemonRowProps) {
         params={{ pokemonId: String(pokemon.pokemonId) }}
         search={{ ...search, from: 'catalog' }}
         className="row-link"
-        aria-label={`Abrir ficha de ${displayName(pokemon.name)}`}
+        aria-label={`Abrir ficha de ${name}`}
         resetScroll={false}
         viewTransition={{ types: ['pokemon-detail'] }}
       >

@@ -3,8 +3,9 @@ import { useState } from 'react'
 
 import { AiProcess, type AiProcessStep } from '@/components/ai-process'
 import { EmptyState, ErrorState, LoadingState } from '@/components/status'
+import { pokemonTypeLabel } from '@/lib/catalog-query'
 import { consumeEventStream } from '@/lib/event-stream'
-import { displayName, useApi } from '@/lib/ui'
+import { useApi } from '@/lib/ui'
 import type { InsightsStreamEvent } from '@/routes/api/insights'
 import type { InsightsResponse } from '@/server/insights'
 
@@ -152,7 +153,7 @@ function Insights() {
                 <dd>
                   {diversity} tipos
                   {dominant
-                    ? ` · mayor presencia ${displayName(dominant.type)} (${dominant.count})`
+                    ? ` · mayor presencia ${pokemonTypeLabel(dominant.type)} (${dominant.count})`
                     : ''}
                 </dd>
               </div>

@@ -636,7 +636,7 @@ small {
 }
 .filter-grid {
   display: grid;
-  grid-template-columns: minmax(13rem, 1.4fr) repeat(4, minmax(9rem, 0.75fr));
+  grid-template-columns: minmax(13rem, 1.4fr) repeat(2, minmax(10rem, 1fr));
   gap: 1rem;
   align-items: end;
   padding: 1.25rem;
@@ -849,6 +849,12 @@ small {
 .detail-header h1 {
   margin-top: 0.35rem;
 }
+.detail-description {
+  max-width: 62ch;
+  margin: 1.25rem 0 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
 .detail-artwork-frame {
   width: 260px;
   height: 260px;
@@ -877,6 +883,33 @@ small {
 .plain-list {
   padding-left: 1.2rem;
   line-height: 2;
+}
+.ability-list {
+  margin: 0;
+  padding: 0;
+  border-top: 2px solid var(--ink);
+  list-style: none;
+}
+.ability-list li {
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.ability-list li > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+.ability-list small {
+  color: var(--accent-dark);
+  font-weight: 750;
+}
+.ability-list p {
+  margin: 0.4rem 0 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.55;
 }
 .measure-list {
   margin-top: 2rem;
@@ -1660,9 +1693,6 @@ code {
 }
 
 @media (max-width: 1180px) {
-  .filter-grid {
-    grid-template-columns: minmax(13rem, 1.4fr) repeat(2, minmax(10rem, 1fr));
-  }
   .collection-entry {
     grid-template-columns: minmax(15rem, 0.8fr) minmax(22rem, 1.6fr);
   }
