@@ -10,6 +10,7 @@ import {
   POKEMON_GENERATIONS,
   POKEMON_TYPES,
 } from '@/lib/catalog-query'
+import { preloadPokemonArtwork } from '@/lib/pokemon-artwork-preloader'
 import { loadPokemonCatalog } from '@/lib/pokemon-catalog.functions'
 import { pokemonTransitionStyle } from '@/lib/pokemon-view-transition'
 import { displayName, useResponsiveDetails } from '@/lib/ui'
@@ -356,6 +357,11 @@ type PokemonRowProps = {
 function PokemonRow({ pokemon, search }: PokemonRowProps) {
   const transitionActive = useActivePokemonTransition(pokemon.pokemonId)
   const name = pokemon.displayName ?? displayName(pokemon.name)
+  const preloadArtwork = () => {
+    if (pokemon.sprite) {
+      void preloadPokemonArtwork(pokemon.sprite).catch(() => undefined)
+    }
+  }
 
   return (
     <div className="table-row">
@@ -409,6 +415,9 @@ function PokemonRow({ pokemon, search }: PokemonRowProps) {
         aria-label={`Abrir ficha de ${name}`}
         resetScroll={false}
         viewTransition={{ types: ['pokemon-detail'] }}
+        onPointerEnter={preloadArtwork}
+        onFocus={preloadArtwork}
+        onPointerDown={preloadArtwork}
       >
         <span className="row-link-label">Abrir ficha</span>
         <i className="hn hn-arrow-right" aria-hidden="true" />
