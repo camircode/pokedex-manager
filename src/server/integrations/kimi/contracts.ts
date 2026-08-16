@@ -5,6 +5,7 @@ import { z } from 'zod'
 export const KIMI_MODEL = 'kimi-k2.6' as const
 export const KIMI_API_BASE_URL = 'https://api.moonshot.ai/v1'
 export const KIMI_DEFAULT_TIMEOUT_MS = 10_000
+export const KIMI_VISION_DEFAULT_TIMEOUT_MS = 30_000
 export const KIMI_MAX_COMPLETION_TOKENS = 128
 export const KIMI_RESEARCH_MAX_COMPLETION_TOKENS = 384
 export const KIMI_INSIGHTS_MAX_COMPLETION_TOKENS = 512
@@ -94,13 +95,14 @@ export const KIMI_INSIGHTS_RESPONSE_FORMAT = {
 } as const
 
 const nonEmptyString = z.string().trim().min(1)
-const timeoutSchema = z
-  .string()
-  .trim()
-  .regex(/^\d+$/)
-  .default(String(KIMI_DEFAULT_TIMEOUT_MS))
-  .transform(Number)
-  .refine((value) => value >= 100 && value <= 120_000)
+const timeoutSchema = (defaultTimeoutMs: number) =>
+  z
+    .string()
+    .trim()
+    .regex(/^\d+$/)
+    .default(String(defaultTimeoutMs))
+    .transform(Number)
+    .refine((value) => value >= 100 && value <= 120_000)
 
 const kimiEnvironmentSchema = z.object({
   KIMI_LIVE_ENABLED: z
@@ -111,7 +113,8 @@ const kimiEnvironmentSchema = z.object({
     (value) => (value === '' ? undefined : value),
     nonEmptyString.optional(),
   ),
-  KIMI_TIMEOUT_MS: timeoutSchema,
+  KIMI_TIMEOUT_MS: timeoutSchema(KIMI_DEFAULT_TIMEOUT_MS),
+  KIMI_VISION_TIMEOUT_MS: timeoutSchema(KIMI_VISION_DEFAULT_TIMEOUT_MS),
 })
 
 export const imageMediaTypeSchema = z.enum([
@@ -354,6 +357,7 @@ export type KimiConfig = {
   enabled: boolean
   apiKey?: string
   timeoutMs: number
+  visionTimeoutMs: number
 }
 
 export type KimiErrorCode =
@@ -416,5 +420,6 @@ export function loadKimiConfig(
     enabled: parsed.data.KIMI_LIVE_ENABLED,
     apiKey: parsed.data.MOONSHOT_API_KEY,
     timeoutMs: parsed.data.KIMI_TIMEOUT_MS,
+    visionTimeoutMs: parsed.data.KIMI_VISION_TIMEOUT_MS,
   }
 }
