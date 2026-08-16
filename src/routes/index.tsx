@@ -1,6 +1,14 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/')({ component: Home })
+import { getSession } from '@/server/session'
+
+export const Route = createFileRoute('/')({
+  beforeLoad: async () => {
+    const session = await getSession()
+    if (session !== null) throw redirect({ to: '/app' })
+  },
+  component: Home,
+})
 
 function Home() {
   return (

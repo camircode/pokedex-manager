@@ -76,6 +76,17 @@ describe('Pokedex URL and responsive UI contracts', () => {
     )
   })
 
+  it('returns authenticated visitors from the public entry to the app', () => {
+    const landing = read('src/routes/index.tsx')
+
+    expect(landing).toContain("import { getSession } from '@/server/session'")
+    expect(landing).toContain('beforeLoad: async () => {')
+    expect(landing).toContain('const session = await getSession()')
+    expect(landing).toContain(
+      "if (session !== null) throw redirect({ to: '/app' })",
+    )
+  })
+
   it('keeps typed catalog defaults deterministic and shareable', () => {
     const pokedex = read('src/routes/app/pokedex/index.tsx')
     expect(catalogQuerySchema.parse({})).toEqual(catalogSearchDefaults)
