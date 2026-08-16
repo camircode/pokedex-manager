@@ -89,6 +89,8 @@ export function createConfiguredKimiAdapter(
     apiKey: config.apiKey,
     baseUrl: options.baseUrl,
     fetch: options.fetch,
-    timeoutMs: config.timeoutMs,
+    // Multimodal inference regularly needs longer than text-only requests,
+    // especially for camera photos that must first be decoded by the provider.
+    timeoutMs: config.visionTimeoutMs,
   })
 }

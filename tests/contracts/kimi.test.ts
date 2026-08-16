@@ -771,6 +771,7 @@ describe('Kimi direct adapter contract', () => {
     expect(loadKimiConfig({})).toMatchObject({
       enabled: false,
       timeoutMs: 10_000,
+      visionTimeoutMs: 30_000,
     })
     expect(() => loadKimiConfig({ KIMI_LIVE_ENABLED: 'true' })).toThrowError(
       KimiAdapterError,
@@ -779,10 +780,12 @@ describe('Kimi direct adapter contract', () => {
       loadKimiConfig({
         KIMI_LIVE_ENABLED: 'true',
         MOONSHOT_API_KEY: 'deterministic-config-key',
+        KIMI_VISION_TIMEOUT_MS: '45000',
       }),
     ).toMatchObject({
       enabled: true,
       apiKey: 'deterministic-config-key',
+      visionTimeoutMs: 45_000,
     })
     expect(() =>
       createConfiguredKimiAdapter({ KIMI_LIVE_ENABLED: 'false' }),
