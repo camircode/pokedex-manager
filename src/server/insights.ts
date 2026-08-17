@@ -55,17 +55,7 @@ export type InsightsResponse = {
   capability: InsightsCapability
 }
 
-/** @deprecated Compatibility for clients deployed before provider reasoning streams. */
-export type InsightsActivityPhase =
-  | 'collecting'
-  | 'preparing'
-  | 'interpreting'
-  | 'validating'
-  | 'persisting'
-
-export type InsightsActivityEvent =
-  | KimiReasoningEvent
-  | { type: 'phase'; phase: InsightsActivityPhase }
+export type InsightsActivityEvent = KimiReasoningEvent
 
 type CollectionPort = {
   list(userId: string): Promise<CollectionEntry[]>
