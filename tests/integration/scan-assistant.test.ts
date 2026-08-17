@@ -505,7 +505,7 @@ describe('assistant ownership, persistence and no-key behavior', () => {
     })
   })
 
-  it('streams thinking, tool activity and the completed message', async () => {
+  it('streams Kimi reasoning, tool activity and the completed message', async () => {
     const response = await assistantHandler(
       new Request(`${baseUrl}/api/assistant`, {
         method: 'POST',
@@ -525,7 +525,10 @@ describe('assistant ownership, persistence and no-key behavior', () => {
               _input: unknown,
               report?: (event: AssistantActivityEvent) => void | Promise<void>,
             ) => {
-              await report?.({ type: 'status', phase: 'thinking' })
+              await report?.({
+                type: 'reasoning',
+                delta: 'Necesito consultar las estadísticas verificadas.',
+              })
               await report?.({
                 type: 'tool_call',
                 operation: { name: 'get_collection_stats', input: {} },
@@ -559,7 +562,8 @@ describe('assistant ownership, persistence and no-key behavior', () => {
     expect(response.status).toBe(200)
     expect(response.headers.get('content-type')).toContain('text/event-stream')
     const body = await response.text()
-    expect(body).toContain('"type":"status","phase":"thinking"')
+    expect(body).toContain('"type":"reasoning"')
+    expect(body).toContain('estadísticas verificadas')
     expect(body).toContain('"type":"tool_call"')
     expect(body).toContain('"type":"tool_result"')
     expect(body).toContain('"type":"complete"')
