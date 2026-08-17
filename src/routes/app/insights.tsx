@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import { AiProcess, type AiProcessStep } from '@/components/ai-process'
+import { AiReasoning, type AiReasoningStep } from '@/components/ai-reasoning'
 import { AiMarkdown } from '@/components/ai-markdown'
 import { EmptyState, ErrorState, LoadingState } from '@/components/status'
 import { pokemonTypeLabel } from '@/lib/catalog-query'
@@ -12,7 +12,7 @@ import type { InsightsResponse } from '@/server/insights'
 
 export const Route = createFileRoute('/app/insights')({ component: Insights })
 
-const insightSteps: AiProcessStep[] = [
+const insightSteps: AiReasoningStep[] = [
   { phase: 'collecting', label: 'Leer datos actuales de la colección' },
   { phase: 'preparing', label: 'Convertir métricas en hechos verificables' },
   { phase: 'interpreting', label: 'Kimi escribe una lectura narrativa' },
@@ -116,7 +116,7 @@ function Insights() {
       {state.error && <ErrorState message={state.error} />}
       {generationError && <ErrorState message={generationError} />}
       {processStartedAt !== null && (
-        <AiProcess
+        <AiReasoning
           title="Interpretación de la colección"
           steps={insightSteps}
           phases={processPhases}

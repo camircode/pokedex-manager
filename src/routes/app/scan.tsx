@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { type ChangeEvent, useEffect, useRef, useState } from 'react'
 
-import { AiProcess, type AiProcessStep } from '@/components/ai-process'
+import { AiReasoning, type AiReasoningStep } from '@/components/ai-reasoning'
 import { ErrorState } from '@/components/status'
 import { pokemonTypeLabel } from '@/lib/catalog-query'
 import { consumeEventStream } from '@/lib/event-stream'
@@ -13,7 +13,7 @@ import type { RecognitionCandidate } from '@/server/card-recognition'
 
 export const Route = createFileRoute('/app/scan')({ component: Scan })
 
-const recognitionSteps: AiProcessStep[] = [
+const recognitionSteps: AiReasoningStep[] = [
   { phase: 'validating', label: 'Verificar formato y contenido del archivo' },
   { phase: 'identifying', label: 'Kimi identifica la especie visible' },
   { phase: 'verifying', label: 'Contrastar ID y nombre con PokéAPI' },
@@ -273,7 +273,7 @@ function Scan() {
       </div>
 
       {processStartedAt !== null && (
-        <AiProcess
+        <AiReasoning
           title="Identificación y contraste"
           steps={recognitionSteps}
           phases={processPhases}
