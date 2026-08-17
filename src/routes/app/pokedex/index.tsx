@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { useRef } from 'react'
 
 import { useActivePokemonTransition } from '@/components/pokemon-transition-coordinator'
 import { EmptyState, ErrorState, LoadingState } from '@/components/status'
@@ -81,7 +82,8 @@ function Pokedex() {
   const search = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
   const catalog = Route.useLoaderData()
-  const filtersRef = useResponsiveDetails()
+  const filtersRef = useResponsiveDetails('(min-width: 721px)', false)
+  const resultsRef = useRef<HTMLDivElement>(null)
   const { abilities: abilityOptions, categories: categoryOptions } =
     catalog.filterOptions
   const selectedAbility = abilityOptions.find(
@@ -146,17 +148,25 @@ function Pokedex() {
               'Selecciona una categoría de la lista.',
             )
             if (category === undefined) return
-            void navigate({
-              search: catalogQuerySchema.parse({
-                query: data.get('query'),
-                type: data.get('type'),
-                generation: data.get('generation'),
-                ability,
-                category,
-                sort: data.get('sort'),
-                limit: data.get('limit'),
-                page: 1,
-              }),
+            const nextSearch = catalogQuerySchema.parse({
+              query: data.get('query'),
+              type: data.get('type'),
+              generation: data.get('generation'),
+              ability,
+              category,
+              sort: data.get('sort'),
+              limit: data.get('limit'),
+              page: 1,
+            })
+            if (filtersRef.current) filtersRef.current.open = false
+            void navigate({ search: nextSearch }).then(() => {
+              resultsRef.current?.scrollIntoView({
+                behavior: window.matchMedia('(prefers-reduced-motion: reduce)')
+                  .matches
+                  ? 'auto'
+                  : 'smooth',
+                block: 'start',
+              })
             })
           }}
         >
@@ -278,73 +288,75 @@ function Pokedex() {
         </span>
       </div>
 
-      {catalog.items.length === 0 && (
-        <EmptyState title="No hay coincidencias">
-          Prueba otra búsqueda o elimina uno de los filtros activos.
-        </EmptyState>
-      )}
-      {catalog.items.length > 0 && (
-        <div className="catalog-results">
-          <div className="table-summary">
-            <span>{catalog.total} resultados</span>
-            <span>
-              Página {catalog.page} de {catalog.pages}
-            </span>
-          </div>
-          <section
-            className="data-table pokemon-table"
-            aria-label="Catálogo Pokémon"
-          >
-            <div className="table-head">
-              <span>N.º</span>
-              <span>Especie</span>
-              <span>Tipos</span>
-              <span>Generación</span>
+      <div ref={resultsRef} className="catalog-results">
+        {catalog.items.length === 0 && (
+          <EmptyState title="No hay coincidencias">
+            Prueba otra búsqueda o elimina uno de los filtros activos.
+          </EmptyState>
+        )}
+        {catalog.items.length > 0 && (
+          <>
+            <div className="table-summary">
+              <span>{catalog.total} resultados</span>
               <span>
-                <span className="sr-only">Acción</span>
+                Página {catalog.page} de {catalog.pages}
               </span>
             </div>
-            {catalog.items.map((pokemon) => (
-              <PokemonRow
-                pokemon={pokemon}
-                search={search}
-                key={pokemon.pokemonId}
-              />
-            ))}
-          </section>
-          <nav className="pagination" aria-label="Paginación">
-            <button
-              type="button"
-              className="button secondary"
-              disabled={search.page <= 1}
-              onClick={() =>
-                void navigate({
-                  search: (old) => ({ ...old, page: old.page - 1 }),
-                })
-              }
+            <section
+              className="data-table pokemon-table"
+              aria-label="Catálogo Pokémon"
             >
-              <i className="hn hn-arrow-left" aria-hidden="true" />
-              Anterior
-            </button>
-            <span aria-current="page">
-              {catalog.page} / {catalog.pages}
-            </span>
-            <button
-              type="button"
-              className="button secondary"
-              disabled={search.page >= catalog.pages}
-              onClick={() =>
-                void navigate({
-                  search: (old) => ({ ...old, page: old.page + 1 }),
-                })
-              }
-            >
-              Siguiente
-              <i className="hn hn-arrow-right" aria-hidden="true" />
-            </button>
-          </nav>
-        </div>
-      )}
+              <div className="table-head">
+                <span>N.º</span>
+                <span>Especie</span>
+                <span>Tipos</span>
+                <span>Generación</span>
+                <span>
+                  <span className="sr-only">Acción</span>
+                </span>
+              </div>
+              {catalog.items.map((pokemon) => (
+                <PokemonRow
+                  pokemon={pokemon}
+                  search={search}
+                  key={pokemon.pokemonId}
+                />
+              ))}
+            </section>
+            <nav className="pagination" aria-label="Paginación">
+              <button
+                type="button"
+                className="button secondary"
+                disabled={search.page <= 1}
+                onClick={() =>
+                  void navigate({
+                    search: (old) => ({ ...old, page: old.page - 1 }),
+                  })
+                }
+              >
+                <i className="hn hn-arrow-left" aria-hidden="true" />
+                Anterior
+              </button>
+              <span aria-current="page">
+                {catalog.page} / {catalog.pages}
+              </span>
+              <button
+                type="button"
+                className="button secondary"
+                disabled={search.page >= catalog.pages}
+                onClick={() =>
+                  void navigate({
+                    search: (old) => ({ ...old, page: old.page + 1 }),
+                  })
+                }
+              >
+                Siguiente
+                <i className="hn hn-arrow-right" aria-hidden="true" />
+              </button>
+            </nav>
+          </>
+        )}
+      </div>
     </main>
   )
 }
@@ -364,7 +376,18 @@ function PokemonRow({ pokemon, search }: PokemonRowProps) {
   }
 
   return (
-    <div className="table-row">
+    <Link
+      to="/app/pokedex/$pokemonId"
+      params={{ pokemonId: String(pokemon.pokemonId) }}
+      search={{ ...search, from: 'catalog' }}
+      className="table-row row-link"
+      aria-label={`Abrir ficha de ${name}`}
+      resetScroll={false}
+      viewTransition={{ types: ['pokemon-detail'] }}
+      onPointerEnter={preloadArtwork}
+      onFocus={preloadArtwork}
+      onPointerDown={preloadArtwork}
+    >
       <span
         data-label="Número"
         className="index-number"
@@ -407,21 +430,10 @@ function PokemonRow({ pokemon, search }: PokemonRowProps) {
           {generationLabel(pokemon.generation)}
         </span>
       </span>
-      <Link
-        to="/app/pokedex/$pokemonId"
-        params={{ pokemonId: String(pokemon.pokemonId) }}
-        search={{ ...search, from: 'catalog' }}
-        className="row-link"
-        aria-label={`Abrir ficha de ${name}`}
-        resetScroll={false}
-        viewTransition={{ types: ['pokemon-detail'] }}
-        onPointerEnter={preloadArtwork}
-        onFocus={preloadArtwork}
-        onPointerDown={preloadArtwork}
-      >
+      <span className="row-link-action" aria-hidden="true">
         <span className="row-link-label">Abrir ficha</span>
         <i className="hn hn-arrow-right" aria-hidden="true" />
-      </Link>
-    </div>
+      </span>
+    </Link>
   )
 }

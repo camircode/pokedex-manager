@@ -98,14 +98,21 @@ describe('Pokedex URL and responsive UI contracts', () => {
       '<details ref={filtersRef} className="catalog-filters">',
     )
     expect(pokedex).not.toContain('className="catalog-filters" open')
+    expect(pokedex).toContain(
+      "useResponsiveDetails('(min-width: 721px)', false)",
+    )
+    expect(pokedex).toContain('resultsRef.current?.scrollIntoView')
+    expect(pokedex).toContain('className="table-row row-link"')
+    expect(pokedex).toContain('className="row-link-action"')
     expect(pokedex).toContain('className="pokemon-metadata"')
     expect(pokedex).toContain('className="row-link-label"')
     const styles = readStyles()
+    expect(styles).toMatch(/\.catalog-filters > summary\s*{[^}]*display: flex/)
     expect(styles).toMatch(
       /\.pokemon-table \.table-row\s*{[^}]*grid-template-areas:[^}]*"artwork number action"/,
     )
     expect(styles).toMatch(
-      /\.pokemon-table \.row-link\s*{[^}]*width: 44px;[^}]*height: 44px/,
+      /\.pokemon-table \.row-link:hover\s*{[^}]*background:/,
     )
     expect(
       pokemonDetailSearchSchema.parse({
@@ -198,7 +205,8 @@ describe('Pokedex URL and responsive UI contracts', () => {
     const ui = read('src/lib/ui.ts')
     const styles = readStyles()
 
-    expect(ui).toContain("useResponsiveDetails(query = '(min-width: 721px)')")
+    expect(ui).toContain('export function useResponsiveDetails(')
+    expect(ui).toContain("query = '(min-width: 721px)'")
     expect(collection).toContain('className="collection-editor"')
     expect(collection).not.toContain('ref={editorRef}')
     expect(collection).toContain('className="collection-tags"')

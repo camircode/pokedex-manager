@@ -38,19 +38,22 @@ export function useApi<T>(url: string) {
   return state
 }
 
-export function useResponsiveDetails(query = '(min-width: 721px)') {
+export function useResponsiveDetails(
+  query = '(min-width: 721px)',
+  openOnMatch = true,
+) {
   const ref = useRef<HTMLDetailsElement>(null)
 
   useEffect(() => {
     const media = window.matchMedia(query)
     const syncDisclosure = () => {
-      if (ref.current) ref.current.open = media.matches
+      if (ref.current) ref.current.open = openOnMatch && media.matches
     }
 
     syncDisclosure()
     media.addEventListener('change', syncDisclosure)
     return () => media.removeEventListener('change', syncDisclosure)
-  }, [query])
+  }, [openOnMatch, query])
 
   return ref
 }
