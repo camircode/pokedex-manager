@@ -12,6 +12,7 @@ import {
   type RecognitionCandidate,
 } from '@/server/card-recognition'
 import { getCatalogService } from '@/server/catalog'
+import { createEventStreamResponse } from '@/server/event-stream-response'
 import {
   apiError,
   assertTrustedMutation,
@@ -48,14 +49,10 @@ function streamRecognition(
   recognize: NonNullable<RecognizeHandlerDependencies['recognize']>,
   input: Parameters<NonNullable<RecognizeHandlerDependencies['recognize']>>[0],
 ) {
-  const encoder = new TextEncoder()
-  const stream = new ReadableStream<Uint8Array>({
-    async start(controller) {
-      const send = (event: RecognitionStreamEvent) => {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`))
-      }
+  return createEventStreamResponse<RecognitionStreamEvent>(
+    async (send, signal) => {
       try {
-        const candidate = await recognize(input, send)
+        const candidate = await recognize(input, send, signal)
         send({ type: 'complete', candidate })
       } catch (error) {
         send({
@@ -67,19 +64,9 @@ function streamRecognition(
                 ? error.message
                 : 'No se pudo analizar la imagen.',
         })
-      } finally {
-        controller.close()
       }
     },
-  })
-  return new Response(stream, {
-    headers: {
-      'Cache-Control': 'no-store',
-      'Content-Type': 'text/event-stream; charset=utf-8',
-      Connection: 'keep-alive',
-      'X-Accel-Buffering': 'no',
-    },
-  })
+  )
 }
 
 export async function recognizeHandler(
@@ -141,7 +128,11 @@ export async function recognizeHandler(
     if (request.headers.get('Accept')?.includes('text/event-stream')) {
       return streamRecognition(recognize, recognitionInput)
     }
-    const candidate = await recognize(recognitionInput)
+    const candidate = await recognize(
+      recognitionInput,
+      undefined,
+      request.signal,
+    )
     return Response.json(
       { status: 'candidate', candidate },
       { headers: { 'Cache-Control': 'no-store' } },

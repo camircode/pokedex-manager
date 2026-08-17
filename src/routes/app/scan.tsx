@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { type ChangeEvent, useEffect, useRef, useState } from 'react'
 
-import { AiReasoning, type AiReasoningStep } from '@/components/ai-reasoning'
+import { AiReasoning, reasoningItems } from '@/components/ai-reasoning'
 import { ErrorState } from '@/components/status'
 import { pokemonTypeLabel } from '@/lib/catalog-query'
 import { consumeEventStream } from '@/lib/event-stream'
@@ -12,12 +12,6 @@ import type { RecognitionStreamEvent } from '@/routes/api/ai/recognize'
 import type { RecognitionCandidate } from '@/server/card-recognition'
 
 export const Route = createFileRoute('/app/scan')({ component: Scan })
-
-const recognitionSteps: AiReasoningStep[] = [
-  { phase: 'validating', label: 'Verificar formato y contenido del archivo' },
-  { phase: 'identifying', label: 'Kimi identifica la especie visible' },
-  { phase: 'verifying', label: 'Contrastar ID y nombre con PokéAPI' },
-]
 
 function Scan() {
   const cameraInput = useRef<HTMLInputElement>(null)
@@ -33,11 +27,7 @@ function Scan() {
   const [preparingImage, setPreparingImage] = useState(false)
   const [loading, setLoading] = useState(false)
   const [adding, setAdding] = useState(false)
-  const [processPhases, setProcessPhases] = useState<string[]>([])
-  const [processStatus, setProcessStatus] = useState<
-    'running' | 'complete' | 'error'
-  >('complete')
-  const [processStartedAt, setProcessStartedAt] = useState<number | null>(null)
+  const [reasoning, setReasoning] = useState('')
 
   useEffect(() => {
     if (file === undefined) {
@@ -57,8 +47,7 @@ function Scan() {
     setIndication('')
     setConsent(false)
     setFile(undefined)
-    setProcessStartedAt(null)
-    setProcessPhases([])
+    setReasoning('')
     if (selected === undefined) return
     setPreparingImage(true)
     try {
@@ -90,9 +79,7 @@ function Scan() {
     setError('')
     setMessage('')
     setCandidate(undefined)
-    setProcessPhases([])
-    setProcessStatus('running')
-    setProcessStartedAt(Date.now())
+    setReasoning('')
     try {
       const form = new FormData()
       form.set('image', file)
@@ -106,25 +93,22 @@ function Scan() {
       await consumeEventStream<RecognitionStreamEvent>(
         response,
         (event) => {
-          if (event.type === 'phase') {
-            setProcessPhases((current) =>
-              current.includes(event.phase)
-                ? current
-                : [...current, event.phase],
-            )
+          if (event.type === 'reasoning') {
+            setReasoning((current) => current + event.delta)
           } else if (event.type === 'error') {
             throw new Error(event.message)
           } else {
             setCandidate(event.candidate)
             setCorrectionOpen(false)
             setIndication('')
-            setProcessStatus('complete')
           }
         },
-        { isTerminal: (event) => event.type !== 'phase' },
+        {
+          isTerminal: (event) =>
+            event.type === 'complete' || event.type === 'error',
+        },
       )
     } catch (caught) {
-      setProcessStatus('error')
       setError(
         caught instanceof Error
           ? caught.message
@@ -272,14 +256,8 @@ function Scan() {
         </section>
       </div>
 
-      {processStartedAt !== null && (
-        <AiReasoning
-          title="Identificación y contraste"
-          steps={recognitionSteps}
-          phases={processPhases}
-          status={processStatus}
-          startedAt={processStartedAt}
-        />
+      {(loading || reasoning.length > 0) && (
+        <AiReasoning items={reasoningItems(reasoning)} streaming={loading} />
       )}
 
       {error && <ErrorState message={error} />}

@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import { AiReasoning, type AiReasoningStep } from '@/components/ai-reasoning'
 import { AiMarkdown } from '@/components/ai-markdown'
+import { AiReasoning, reasoningItems } from '@/components/ai-reasoning'
 import { EmptyState, ErrorState, LoadingState } from '@/components/status'
 import { pokemonTypeLabel } from '@/lib/catalog-query'
 import { consumeEventStream } from '@/lib/event-stream'
@@ -12,23 +12,11 @@ import type { InsightsResponse } from '@/server/insights'
 
 export const Route = createFileRoute('/app/insights')({ component: Insights })
 
-const insightSteps: AiReasoningStep[] = [
-  { phase: 'collecting', label: 'Leer datos actuales de la colección' },
-  { phase: 'preparing', label: 'Convertir métricas en hechos verificables' },
-  { phase: 'interpreting', label: 'Kimi escribe una lectura narrativa' },
-  { phase: 'validating', label: 'Validar texto y límites de salida' },
-  { phase: 'persisting', label: 'Guardar el análisis para esta versión' },
-]
-
 function Insights() {
   const [version, setVersion] = useState(0)
   const [generating, setGenerating] = useState(false)
   const [generationError, setGenerationError] = useState('')
-  const [processPhases, setProcessPhases] = useState<string[]>([])
-  const [processStatus, setProcessStatus] = useState<
-    'running' | 'complete' | 'error'
-  >('complete')
-  const [processStartedAt, setProcessStartedAt] = useState<number | null>(null)
+  const [reasoning, setReasoning] = useState('')
   const state = useApi<InsightsResponse>(`/api/insights?version=${version}`)
   const dominant = state.data?.stats.typeDistribution[0]
   const diversity = state.data?.stats.typeDistribution.length ?? 0
@@ -37,9 +25,7 @@ function Insights() {
     if (generating || state.data?.stats.totalUnique === 0) return
     setGenerating(true)
     setGenerationError('')
-    setProcessPhases([])
-    setProcessStatus('running')
-    setProcessStartedAt(Date.now())
+    setReasoning('')
     try {
       const response = await fetch('/api/insights', {
         method: 'POST',
@@ -48,23 +34,20 @@ function Insights() {
       await consumeEventStream<InsightsStreamEvent>(
         response,
         (event) => {
-          if (event.type === 'phase') {
-            setProcessPhases((current) =>
-              current.includes(event.phase)
-                ? current
-                : [...current, event.phase],
-            )
+          if (event.type === 'reasoning') {
+            setReasoning((current) => current + event.delta)
           } else if (event.type === 'error') {
             throw new Error(event.message)
           } else {
-            setProcessStatus('complete')
             setVersion((value) => value + 1)
           }
         },
-        { isTerminal: (event) => event.type !== 'phase' },
+        {
+          isTerminal: (event) =>
+            event.type === 'complete' || event.type === 'error',
+        },
       )
     } catch (error) {
-      setProcessStatus('error')
       setGenerationError(
         error instanceof Error
           ? error.message
@@ -115,14 +98,8 @@ function Insights() {
       {state.loading && <LoadingState label="Leyendo la colección…" />}
       {state.error && <ErrorState message={state.error} />}
       {generationError && <ErrorState message={generationError} />}
-      {processStartedAt !== null && (
-        <AiReasoning
-          title="Interpretación de la colección"
-          steps={insightSteps}
-          phases={processPhases}
-          status={processStatus}
-          startedAt={processStartedAt}
-        />
+      {(generating || reasoning.length > 0) && (
+        <AiReasoning items={reasoningItems(reasoning)} streaming={generating} />
       )}
 
       {state.data?.stats.totalUnique === 0 && (

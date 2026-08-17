@@ -97,7 +97,6 @@
 }
 .message-markdown,
 .message-markdown a,
-.assistant-activity li > div,
 .tool-call-list li > div {
   min-width: 0;
   overflow-wrap: anywhere;
@@ -203,8 +202,7 @@
   font-size: 0.82rem;
   font-weight: 700;
 }
-.tool-call-list,
-.assistant-activity ol {
+.tool-call-list {
   display: grid;
   gap: 0.55rem;
   margin: 0;
@@ -214,64 +212,24 @@
 .tool-call-list {
   margin-bottom: 1rem;
 }
-.tool-call-list li,
-.assistant-activity li {
+.tool-call-list li {
   display: flex;
   align-items: flex-start;
   gap: 0.55rem;
 }
-.tool-call-list .hn,
-.assistant-activity .hn {
+.tool-call-list .hn {
   margin-top: 0.15rem;
   color: var(--accent-dark);
 }
-.thinking-status {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
+.assistant-reasoning {
   margin-top: 0.65rem;
-  color: var(--muted);
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
 }
-.thinking-status > span:last-child {
-  margin-left: auto;
-  font-family: var(--font-lab);
-  font-size: 0.72rem;
-}
-.thinking-dots {
-  display: inline-flex;
-  gap: 0.2rem;
-}
-/* biome-ignore lint/style/noDescendingSpecificity: This selector belongs to a separate component. */
-.thinking-dots span {
-  width: 0.35rem;
-  height: 0.35rem;
-  border-radius: 50%;
-  background: var(--accent);
-  animation: assistant-thinking 900ms ease-in-out infinite alternate;
-}
-.thinking-dots span:nth-child(2) {
-  animation-delay: 150ms;
-}
-.thinking-dots span:nth-child(3) {
-  animation-delay: 300ms;
-}
-.assistant-activity li > div {
-  display: grid;
-  gap: 0.15rem;
-}
-.assistant-activity li span {
-  font-size: 0.75rem;
-}
-.assistant-activity code,
 .tool-call-list code {
   color: var(--muted);
   font-size: 0.72rem;
-}
-@keyframes assistant-thinking {
-  to {
-    opacity: 0.35;
-    transform: translateY(-0.2rem);
-  }
 }
 .assistant-composer {
   position: sticky;
