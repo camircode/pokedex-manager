@@ -26,7 +26,7 @@ describe('MCP product port', () => {
     dependencies.getCollectionService.mockResolvedValue({})
   })
 
-  it('honors search limits below the catalog page minimum', async () => {
+  it('forwards structured filters and honors small MCP limits', async () => {
     const items = Array.from({ length: 5 }, (_, index) => ({
       pokemonId: index + 1,
     }))
@@ -41,11 +41,23 @@ describe('MCP product port', () => {
     const result = await productReadonlyPort.list({
       principal: { subject: 'assistant-user' },
       operation: 'search_pokemon',
-      input: { query: 'pikachu', limit: 1 },
+      input: {
+        type: 'grass',
+        generation: 'generation-i',
+        ability: 'chlorophyll',
+        category: 'Seed Pokémon',
+        sort: 'attack-desc',
+        limit: 1,
+      },
     })
 
     expect(list).toHaveBeenCalledWith({
-      query: 'pikachu',
+      query: '',
+      type: 'grass',
+      generation: 'generation-i',
+      ability: 'chlorophyll',
+      category: 'Seed Pokémon',
+      sort: 'attack-desc',
       limit: 5,
       page: 1,
     })

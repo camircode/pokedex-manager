@@ -11,6 +11,10 @@ import type {
   ReadonlyOperation,
   ReadonlyToolPort,
 } from '@/server/integrations/mcp/contracts'
+import {
+  SEARCH_POKEMON_TOOL_DESCRIPTION,
+  searchPokemonInputShape,
+} from '@/server/integrations/mcp/contracts'
 
 function safeJson(value: unknown) {
   try {
@@ -57,11 +61,8 @@ function registerReadonlySurface(
     'search_pokemon',
     {
       title: 'Search Pokémon',
-      description: 'Read-only Pokémon search.',
-      inputSchema: {
-        query: z.string().trim().min(1).max(80),
-        limit: z.number().int().min(1).max(20).optional(),
-      },
+      description: SEARCH_POKEMON_TOOL_DESCRIPTION,
+      inputSchema: searchPokemonInputShape,
       annotations: { readOnlyHint: true, destructiveHint: false },
     },
     (input) => toolResult('search_pokemon', input),

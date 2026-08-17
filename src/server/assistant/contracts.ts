@@ -1,10 +1,11 @@
 import '@tanstack/react-start/server-only'
 
 import { z } from 'zod'
-
-import type { KIMI_MODEL } from '@/server/integrations/kimi'
-import type { KimiReasoningEvent } from '@/server/integrations/kimi'
-import type { McpToolName } from '@/server/integrations/mcp'
+import type { KIMI_MODEL, KimiReasoningEvent } from '@/server/integrations/kimi'
+import {
+  type McpToolName,
+  searchPokemonInputSchema,
+} from '@/server/integrations/mcp'
 
 export const MAX_ASSISTANT_TOOL_OPERATIONS = 6
 export const MAX_ASSISTANT_CONTEXT_MESSAGES = 20
@@ -95,12 +96,7 @@ export const assistantToolOperationSchema = z.discriminatedUnion('name', [
   z
     .object({
       name: z.literal('search_pokemon'),
-      input: z
-        .object({
-          query: z.string().trim().min(1).max(40),
-          limit: z.number().int().min(1).max(20).optional(),
-        })
-        .strict(),
+      input: searchPokemonInputSchema,
     })
     .strict(),
   z
