@@ -6,10 +6,14 @@ export const KIMI_MODEL = 'kimi-k2.6' as const
 export const KIMI_API_BASE_URL = 'https://api.moonshot.ai/v1'
 export const KIMI_DEFAULT_TIMEOUT_MS = 10_000
 export const KIMI_VISION_DEFAULT_TIMEOUT_MS = 30_000
-export const KIMI_MAX_COMPLETION_TOKENS = 128
-export const KIMI_RESEARCH_MAX_COMPLETION_TOKENS = 384
-export const KIMI_INSIGHTS_MAX_COMPLETION_TOKENS = 512
-export const KIMI_ASSISTANT_MAX_COMPLETION_TOKENS = 768
+export const KIMI_TEMPERATURE = 1
+export const KIMI_THINKING = { type: 'enabled' } as const
+// Thinking tokens are part of max_completion_tokens, so every response needs
+// enough headroom for reasoning before its visible content.
+export const KIMI_MAX_COMPLETION_TOKENS = 1_024
+export const KIMI_RESEARCH_MAX_COMPLETION_TOKENS = 2_048
+export const KIMI_INSIGHTS_MAX_COMPLETION_TOKENS = 2_048
+export const KIMI_ASSISTANT_MAX_COMPLETION_TOKENS = 4_096
 export const KIMI_DEFAULT_PROMPT =
   'Identify the Pokémon in this image. Return only the requested JSON.'
 
@@ -31,64 +35,6 @@ export const KIMI_RESPONSE_FORMAT = {
         },
       },
       required: ['pokemonId', 'name'],
-      additionalProperties: false,
-    },
-  },
-} as const
-
-export const KIMI_RESEARCH_RESPONSE_FORMAT = {
-  type: 'json_schema',
-  json_schema: {
-    name: 'research_expedition_proposal',
-    strict: true,
-    schema: {
-      type: 'object',
-      properties: {
-        title: { type: 'string', minLength: 8, maxLength: 80 },
-        premise: { type: 'string', minLength: 20, maxLength: 240 },
-        objectiveKeys: {
-          type: 'array',
-          items: { type: 'string', minLength: 1, maxLength: 64 },
-          minItems: 2,
-          maxItems: 3,
-        },
-      },
-      required: ['title', 'premise', 'objectiveKeys'],
-      additionalProperties: false,
-    },
-  },
-} as const
-
-export const KIMI_INSIGHTS_RESPONSE_FORMAT = {
-  type: 'json_schema',
-  json_schema: {
-    name: 'collection_insights',
-    strict: true,
-    schema: {
-      type: 'object',
-      properties: {
-        headline: { type: 'string', minLength: 8, maxLength: 80 },
-        summary: { type: 'string', minLength: 20, maxLength: 280 },
-        findings: {
-          type: 'array',
-          minItems: 2,
-          maxItems: 4,
-          items: {
-            type: 'object',
-            properties: {
-              factKey: { type: 'string', minLength: 1, maxLength: 64 },
-              interpretation: {
-                type: 'string',
-                minLength: 20,
-                maxLength: 220,
-              },
-            },
-            required: ['factKey', 'interpretation'],
-            additionalProperties: false,
-          },
-        },
-      },
-      required: ['headline', 'summary', 'findings'],
       additionalProperties: false,
     },
   },
@@ -128,7 +74,7 @@ export const imageInputSchema = z
   .object({
     image: z.custom<Uint8Array>((value) => value instanceof Uint8Array),
     mediaType: imageMediaTypeSchema,
-    prompt: nonEmptyString.max(200).optional(),
+    prompt: nonEmptyString.max(400).optional(),
   })
   .strict()
 
@@ -250,14 +196,6 @@ export const researchProposalInputSchema = z
   })
   .strict()
 
-export const researchProposalSchema = z
-  .object({
-    title: z.string().trim().min(8).max(80),
-    premise: z.string().trim().min(20).max(240),
-    objectiveKeys: z.array(z.string().trim().min(1).max(64)).min(2).max(3),
-  })
-  .strict()
-
 const insightFactSchema = z
   .object({
     key: z.string().trim().min(1).max(64),
@@ -270,26 +208,10 @@ export const insightsProposalInputSchema = z
   .object({ facts: z.array(insightFactSchema).min(2).max(8) })
   .strict()
 
-export const insightsProposalSchema = z
-  .object({
-    headline: z.string().trim().min(8).max(80),
-    summary: z.string().trim().min(20).max(280),
-    findings: z
-      .array(
-        z
-          .object({
-            factKey: z.string().trim().min(1).max(64),
-            interpretation: z.string().trim().min(20).max(220),
-          })
-          .strict(),
-      )
-      .min(2)
-      .max(4),
-  })
-  .strict()
+export const kimiNarrativeSchema = z.string().trim().min(20).max(8_000)
 
 export type ResearchProposalInput = z.infer<typeof researchProposalInputSchema>
-export type ResearchProposal = z.infer<typeof researchProposalSchema>
+export type ResearchProposal = string
 
 export interface ResearchProposalPort {
   propose(
@@ -299,7 +221,7 @@ export interface ResearchProposalPort {
 }
 
 export type InsightsProposalInput = z.infer<typeof insightsProposalInputSchema>
-export type InsightsProposal = z.infer<typeof insightsProposalSchema>
+export type InsightsProposal = string
 
 export interface InsightsProposalPort {
   propose(

@@ -29,11 +29,18 @@ export type AiInsight = {
   userId: string
   type: 'collection-overview'
   collectionVersion: string
-  headline: string
-  summary: string
-  findings: Array<InsightFact & { interpretation: string }>
+  narrative: string
+  evidence: InsightFact[]
   model: typeof KIMI_MODEL
   createdAt: Date
+}
+
+type StoredAiInsight = Omit<AiInsight, 'narrative' | 'evidence'> & {
+  narrative?: string
+  evidence?: InsightFact[]
+  headline?: string
+  summary?: string
+  findings?: Array<InsightFact & { interpretation: string }>
 }
 
 export type InsightsCapability = {
@@ -131,9 +138,33 @@ export function buildInsightFacts(
   ]
 }
 
-function cleanInsight(document: WithId<AiInsight>): AiInsight {
+function cleanInsight(document: WithId<StoredAiInsight>): AiInsight {
   const { _id: _ignored, ...insight } = document
-  return insight
+  if (insight.narrative !== undefined && insight.evidence !== undefined) {
+    return {
+      ...insight,
+      narrative: insight.narrative,
+      evidence: insight.evidence,
+    }
+  }
+
+  const legacyFindings = insight.findings ?? []
+  const legacyNarrative = [insight.headline, insight.summary]
+    .filter((value): value is string => value !== undefined)
+    .concat(legacyFindings.map((finding) => finding.interpretation))
+    .join('\n\n')
+
+  return {
+    userId: insight.userId,
+    type: insight.type,
+    collectionVersion: insight.collectionVersion,
+    narrative: legacyNarrative,
+    evidence:
+      insight.evidence ??
+      legacyFindings.map(({ interpretation: _ignored, ...fact }) => fact),
+    model: insight.model,
+    createdAt: insight.createdAt,
+  }
 }
 
 export function getInsightsCapability(
@@ -154,7 +185,7 @@ export function createInsightsService(
   database: Db,
   options: { collection?: CollectionPort; now?: () => Date } = {},
 ) {
-  const insights = database.collection<AiInsight>('ai_insights')
+  const insights = database.collection<StoredAiInsight>('ai_insights')
   const collection = options.collection ?? createCollectionService(database)
   const now = options.now ?? (() => new Date())
 
@@ -193,22 +224,15 @@ export function createInsightsService(
     if (state.entries.length === 0) throw new InsightsEmptyCollectionError()
 
     await report?.({ type: 'phase', phase: 'preparing' })
-    const factsByKey = new Map(state.facts.map((fact) => [fact.key, fact]))
     await report?.({ type: 'phase', phase: 'interpreting' })
-    const generated = await proposal.propose({ facts: state.facts })
+    const narrative = await proposal.propose({ facts: state.facts })
     await report?.({ type: 'phase', phase: 'validating' })
-    const findings = generated.findings.map((finding) => {
-      const fact = factsByKey.get(finding.factKey)
-      if (fact === undefined) throw new Error('Invalid verified insight fact')
-      return { ...fact, interpretation: finding.interpretation }
-    })
     const insight: AiInsight = {
       userId,
       type: 'collection-overview',
       collectionVersion: state.version,
-      headline: generated.headline,
-      summary: generated.summary,
-      findings,
+      narrative,
+      evidence: state.facts,
       model: KIMI_MODEL,
       createdAt: now(),
     }

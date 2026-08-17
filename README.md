@@ -130,8 +130,8 @@ No confirmes `.env`, `.env.local`, `.env.production`, cookies, bearers ni claves
 | Catálogo | Búsqueda; filtros por tipo, generación, habilidad y categoría Pokédex; autocompletado para listas extensas; orden por generación o cada estadística base; paginación y fichas localizadas desde PokéAPI. Caché de 24 horas con último dato conocido para una ficha vencida. |
 | Colección | Alta, edición y eliminación por cuenta; cantidad, apodo, notas, etiquetas y favorito. Todas las consultas incluyen `userId`. |
 | Resumen | Especies únicas, cantidad total, favoritos, distribución por tipo y actividad reciente calculados en servidor. |
-| Hallazgos | El servidor convierte estadísticas en hechos permitidos; Kimi solo interpreta esos hechos y debe citar sus claves. |
-| Investigación | Kimi propone narrativa y objetivos entre candidatos controlados. El servidor valida criterios y calcula el progreso sin escribir durante las lecturas. |
+| Hallazgos | El servidor convierte estadísticas en hechos permitidos; Kimi escribe una interpretación narrativa libre y los hechos permanecen separados como evidencia. |
+| Investigación | Kimi escribe la narrativa; el servidor conserva objetivos y criterios controlados y calcula el progreso sin escribir durante las lecturas. |
 | Reconocimiento | Prepara y optimiza la imagen en el navegador, valida su contenido, exige consentimiento, consulta Kimi y contrasta ID y nombre con PokéAPI. Nunca agrega sin confirmación. |
 | Asistente | Conserva historial por cuenta. Kimi o el modo de respaldo determinista descubren y ejecutan herramientas mediante una sesión MCP oficial en memoria. |
 | MCP HTTP | Expone herramientas y recursos de consulta con bearer y sujeto explícitos. No reutiliza la cookie del navegador ni permite escrituras de negocio; una consulta de catálogo puede actualizar la caché técnica. |
@@ -228,7 +228,7 @@ La arquitectura separa transporte, casos de uso e integraciones sin imponer capa
 | `createCollectionService` | Encapsula escrituras atómicas, aislamiento por cuenta y límites de cantidad de la colección. |
 | `addPokemonToCollection` | Obtiene una ficha verificada y delega el alta aislada por usuario. |
 | `calculateDashboardStats` | Deriva métricas deterministas sin acceso a infraestructura. |
-| `createInsightsService` | Persiste análisis validados por versión de colección. |
+| `createInsightsService` | Persiste narrativa y evidencia calculada por versión de colección. |
 | `createResearchService` | Genera expediciones y calcula el estado actual como proyección pura de la colección. |
 | `createCardRecognitionService` | Une clasificación Kimi y verificación de catálogo sin persistir la imagen. |
 | `createAssistantService` | Aísla conversaciones, limita contexto y operaciones, ejecuta MCP y persiste mensajes citados. |
@@ -280,7 +280,7 @@ La colección personal conserva una instantánea mínima del Pokémon para evita
 
 ## Kimi y MCP
 
-Kimi se conecta directamente para reconocimiento, hallazgos e investigación. Esas respuestas se consideran no confiables hasta pasar validación Zod y reglas de dominio.
+Kimi se conecta directamente para reconocimiento, hallazgos e investigación. Las narrativas se validan como texto acotado y se presentan separadas de los datos objetivos; los resultados de reconocimiento y los criterios de investigación siguen pasando por las reglas de dominio del servidor.
 
 El asistente usa MCP como frontera de contexto. Cada envío crea un cliente y servidor MCP enlazados mediante `InMemoryTransport`, negocia el protocolo, ejecuta `tools/list` y `tools/call`, y cierra la sesión al terminar. El modo local de respaldo usa la misma frontera; no llama servicios de producto por una ruta paralela.
 

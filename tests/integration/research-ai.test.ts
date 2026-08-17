@@ -47,12 +47,10 @@ function entry(userId = 'research-user'): CollectionEntry {
 
 function validProposal(): ResearchProposalPort {
   return {
-    propose: vi.fn(async () => ({
-      title: 'Archivo de ecosistemas ausentes',
-      premise:
-        'Amplía el registro con especies que representen nuevos hábitats.',
-      objectiveKeys: ['expand-index', 'type-water'],
-    })),
+    propose: vi.fn(
+      async () =>
+        'Amplía el registro con especies que representen nuevos hábitats y descubre nuevas rutas para tu colección.',
+    ),
   }
 }
 
@@ -108,12 +106,19 @@ describe('AI research persistence boundary', () => {
       model: 'kimi-k2.6',
       generatedAt: new Date('2026-08-14T12:00:00Z'),
     })
+    expect(expedition.narrative).toContain('Amplía el registro')
     expect(expedition.objectives).toEqual([
       expect.objectContaining({
         key: 'expand-index',
         target: 4,
         progress: 1,
         criterion: { kind: 'unique-count' },
+      }),
+      expect.objectContaining({
+        key: 'type-fire',
+        target: 1,
+        progress: 0,
+        criterion: { kind: 'has-type', type: 'fire' },
       }),
       expect.objectContaining({
         key: 'type-water',
@@ -215,7 +220,12 @@ describe('AI research persistence boundary', () => {
         pokemonId,
         pokemon: {
           ...entry().pokemon,
-          types: pokemonId === 7 ? ['water'] : ['electric'],
+          types:
+            pokemonId === 7
+              ? ['water']
+              : pokemonId === 8
+                ? ['fire']
+                : ['electric'],
         },
       })),
     ]

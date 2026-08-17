@@ -12,10 +12,14 @@ import {
   createKimiChatAdapter,
   createKimiInsightsAdapter,
   createKimiResearchAdapter,
-  KIMI_INSIGHTS_RESPONSE_FORMAT,
+  KIMI_ASSISTANT_MAX_COMPLETION_TOKENS,
+  KIMI_MAX_COMPLETION_TOKENS,
+  KIMI_INSIGHTS_MAX_COMPLETION_TOKENS,
   KIMI_MODEL,
-  KIMI_RESEARCH_RESPONSE_FORMAT,
+  KIMI_RESEARCH_MAX_COMPLETION_TOKENS,
   KIMI_RESPONSE_FORMAT,
+  KIMI_TEMPERATURE,
+  KIMI_THINKING,
   KimiAdapterError,
   loadKimiConfig,
 } from '../../src/server/integrations/kimi'
@@ -191,9 +195,9 @@ describe('Kimi direct adapter contract', () => {
         'Bearer deterministic-contract-key',
       )
       expect(request.stream).toBe(false)
-      expect(request.thinking).toEqual({ type: 'disabled' })
-      expect(request.temperature).toBe(0.6)
-      expect(request.max_completion_tokens).toBe(128)
+      expect(request.thinking).toEqual(KIMI_THINKING)
+      expect(request.temperature).toBe(KIMI_TEMPERATURE)
+      expect(request.max_completion_tokens).toBe(KIMI_MAX_COMPLETION_TOKENS)
       expect(request.messages).toHaveLength(1)
       expect(request.messages[0]?.role).toBe('user')
       const content = request.messages[0]?.content
@@ -225,12 +229,8 @@ describe('Kimi direct adapter contract', () => {
           {
             finish_reason: 'stop',
             message: {
-              content: JSON.stringify({
-                title: 'Archivo de ecosistemas ausentes',
-                premise:
-                  'Amplía el registro con especies que representen nuevos hábitats.',
-                objectiveKeys: ['expand-index', 'type-water'],
-              }),
+              content:
+                'Tu colección puede abrir una ruta hacia nuevos hábitats: amplía el registro con especies de tipos todavía ausentes y conserva una curaduría manejable.',
             },
           },
         ],
@@ -258,17 +258,17 @@ describe('Kimi direct adapter contract', () => {
             },
           ],
         }),
-      ).resolves.toMatchObject({
-        objectiveKeys: ['expand-index', 'type-water'],
-      })
+      ).resolves.toContain('Tu colección puede abrir una ruta')
 
       const request = server.requests[0]
       expect(request?.model).toBe('kimi-k2.6')
       expect(request?.stream).toBe(false)
-      expect(request?.thinking).toEqual({ type: 'disabled' })
-      expect(request?.temperature).toBe(0.6)
-      expect(request?.max_completion_tokens).toBeLessThanOrEqual(512)
-      expect(request?.response_format).toEqual(KIMI_RESEARCH_RESPONSE_FORMAT)
+      expect(request?.thinking).toEqual(KIMI_THINKING)
+      expect(request?.temperature).toBe(KIMI_TEMPERATURE)
+      expect(request?.max_completion_tokens).toBe(
+        KIMI_RESEARCH_MAX_COMPLETION_TOKENS,
+      )
+      expect(request?.response_format).toBeUndefined()
       expect(typeof request?.messages[0]?.content).toBe('string')
       const serialized = JSON.stringify(request)
       expect(serialized).not.toContain('user@example.com')
@@ -286,23 +286,8 @@ describe('Kimi direct adapter contract', () => {
           {
             finish_reason: 'stop',
             message: {
-              content: JSON.stringify({
-                headline: 'Una colección pequeña con base eléctrica',
-                summary:
-                  'La colección tiene una base compacta y señales claras para orientar su próxima ampliación.',
-                findings: [
-                  {
-                    factKey: 'collection-size',
-                    interpretation:
-                      'El tamaño actual permite ampliar diversidad sin perder una curaduría manejable.',
-                  },
-                  {
-                    factKey: 'favorites',
-                    interpretation:
-                      'La ausencia de favoritos deja pendiente una capa explícita de prioridad personal.',
-                  },
-                ],
-              }),
+              content:
+                'La colección tiene una base compacta y señales claras para orientar su próxima ampliación. La concentración actual puede convertirse en una oportunidad para explorar nuevos tipos sin perder una curaduría manejable.',
             },
           },
         ],
@@ -329,17 +314,13 @@ describe('Kimi direct adapter contract', () => {
             },
           ],
         }),
-      ).resolves.toMatchObject({
-        findings: [
-          expect.objectContaining({ factKey: 'collection-size' }),
-          expect.objectContaining({ factKey: 'favorites' }),
-        ],
-      })
-      expect(server.requests[0]?.thinking).toEqual({ type: 'disabled' })
-      expect(server.requests[0]?.temperature).toBe(0.6)
-      expect(server.requests[0]?.response_format).toEqual(
-        KIMI_INSIGHTS_RESPONSE_FORMAT,
+      ).resolves.toContain('La colección tiene una base compacta')
+      expect(server.requests[0]?.thinking).toEqual(KIMI_THINKING)
+      expect(server.requests[0]?.temperature).toBe(KIMI_TEMPERATURE)
+      expect(server.requests[0]?.max_completion_tokens).toBe(
+        KIMI_INSIGHTS_MAX_COMPLETION_TOKENS,
       )
+      expect(server.requests[0]?.response_format).toBeUndefined()
     } finally {
       await server.close()
     }
@@ -411,8 +392,11 @@ describe('Kimi direct adapter contract', () => {
       expect(server.requests[0]?.tools?.[0]?.function.name).toBe(
         'getCollectionStats',
       )
-      expect(server.requests[0]?.max_completion_tokens).toBe(768)
-      expect(server.requests[0]?.temperature).toBe(0.6)
+      expect(server.requests[0]?.max_completion_tokens).toBe(
+        KIMI_ASSISTANT_MAX_COMPLETION_TOKENS,
+      )
+      expect(server.requests[0]?.thinking).toEqual(KIMI_THINKING)
+      expect(server.requests[0]?.temperature).toBe(KIMI_TEMPERATURE)
     } finally {
       await server.close()
     }
@@ -522,23 +506,15 @@ describe('Kimi direct adapter contract', () => {
     }
   })
 
-  it.each([
-    ['unknown key', ['expand-index', 'unknown-key']],
-    ['duplicate keys', ['expand-index', 'expand-index']],
-    ['too few keys', ['expand-index']],
-  ])('rejects research proposals with %s', async (_label, objectiveKeys) => {
+  it('accepts a freeform research narrative without a response schema', async () => {
     const server = await startMockKimiServer({
       payload: {
         choices: [
           {
             finish_reason: 'stop',
             message: {
-              content: JSON.stringify({
-                title: 'Archivo de ecosistemas ausentes',
-                premise:
-                  'Amplía el registro con especies que representen nuevos hábitats.',
-                objectiveKeys,
-              }),
+              content:
+                'Explora una nueva frontera de tu colección y registra especies que amplíen su diversidad.',
             },
           },
         ],
@@ -565,7 +541,8 @@ describe('Kimi direct adapter contract', () => {
             },
           ],
         }),
-      ).rejects.toMatchObject({ code: 'KIMI_RESULT_INVALID' })
+      ).resolves.toContain('Explora una nueva frontera')
+      expect(server.requests[0]?.response_format).toBeUndefined()
     } finally {
       await server.close()
     }
@@ -573,9 +550,9 @@ describe('Kimi direct adapter contract', () => {
 
   it.each([
     ['length', '{"title":"Archivo'],
-    ['stop', 'not-json'],
+    ['stop', 'too short'],
   ])(
-    'rejects research finish reason %s with invalid content',
+    'rejects research finish reason %s with invalid narrative content',
     async (finishReason, content) => {
       const server = await startMockKimiServer({
         payload: {
@@ -607,7 +584,7 @@ describe('Kimi direct adapter contract', () => {
           code:
             finishReason === 'length'
               ? 'KIMI_RESPONSE_TRUNCATED'
-              : 'KIMI_JSON_INVALID',
+              : 'KIMI_RESULT_INVALID',
         })
       } finally {
         await server.close()

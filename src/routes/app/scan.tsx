@@ -28,6 +28,8 @@ function Scan() {
   const [candidate, setCandidate] = useState<RecognitionCandidate>()
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
+  const [correctionOpen, setCorrectionOpen] = useState(false)
+  const [indication, setIndication] = useState('')
   const [preparingImage, setPreparingImage] = useState(false)
   const [loading, setLoading] = useState(false)
   const [adding, setAdding] = useState(false)
@@ -51,6 +53,8 @@ function Scan() {
     setError('')
     setMessage('')
     setCandidate(undefined)
+    setCorrectionOpen(false)
+    setIndication('')
     setConsent(false)
     setFile(undefined)
     setProcessStartedAt(null)
@@ -79,8 +83,9 @@ function Scan() {
     void selectImage(selected)
   }
 
-  async function analyze() {
+  async function analyze(indicationOverride?: string) {
     if (file === undefined || !consent) return
+    const normalizedIndication = (indicationOverride ?? indication).trim()
     setLoading(true)
     setError('')
     setMessage('')
@@ -92,6 +97,7 @@ function Scan() {
       const form = new FormData()
       form.set('image', file)
       form.set('consent', 'true')
+      if (normalizedIndication) form.set('indication', normalizedIndication)
       const response = await fetch('/api/ai/recognize', {
         method: 'POST',
         headers: { Accept: 'text/event-stream' },
@@ -110,6 +116,8 @@ function Scan() {
             throw new Error(event.message)
           } else {
             setCandidate(event.candidate)
+            setCorrectionOpen(false)
+            setIndication('')
             setProcessStatus('complete')
           }
         },
@@ -125,6 +133,12 @@ function Scan() {
     } finally {
       setLoading(false)
     }
+  }
+
+  function openCorrection() {
+    setCorrectionOpen(true)
+    setError('')
+    setMessage('')
   }
 
   async function confirmCandidate() {
@@ -314,16 +328,73 @@ function Scan() {
           </dl>
           <footer>
             <p>Revisa la especie antes de modificar tu colección.</p>
-            <button
-              type="button"
-              className="button primary"
-              disabled={adding}
-              onClick={() => void confirmCandidate()}
-            >
-              <i className="hn hn-check" aria-hidden="true" />
-              {adding ? 'Agregando…' : 'Confirmar y agregar'}
-            </button>
+            <div className="button-row">
+              <button
+                type="button"
+                className="button secondary"
+                disabled={adding || loading}
+                onClick={openCorrection}
+              >
+                No es esta carta
+              </button>
+              <button
+                type="button"
+                className="button primary"
+                disabled={adding || loading}
+                onClick={() => void confirmCandidate()}
+              >
+                <i className="hn hn-check" aria-hidden="true" />
+                {adding ? 'Agregando…' : 'Confirmar y agregar'}
+              </button>
+            </div>
           </footer>
+          {correctionOpen && (
+            <fieldset className="recognition-correction">
+              <legend>Orientar otro intento</legend>
+              <p>
+                Volveré a analizar la misma imagen sin que tengas que cargarla
+                otra vez. Puedes dejar una indicación opcional para Kimi.
+              </p>
+              <label htmlFor="recognition-indication">
+                Indicación para el siguiente análisis
+              </label>
+              <textarea
+                id="recognition-indication"
+                value={indication}
+                maxLength={200}
+                rows={3}
+                placeholder="Ejemplo: la carta muestra un Pokémon de tipo agua"
+                onChange={(event) => setIndication(event.target.value)}
+              />
+              <div className="button-row">
+                <button
+                  type="button"
+                  className="button secondary"
+                  disabled={loading}
+                  onClick={() => {
+                    setCorrectionOpen(false)
+                    setIndication('')
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="button primary"
+                  disabled={loading}
+                  onClick={() => void analyze(indication)}
+                >
+                  <i className="hn hn-refresh" aria-hidden="true" />
+                  {loading
+                    ? 'Analizando…'
+                    : indication.trim()
+                      ? 'Reintentar con indicación'
+                      : 'Reintentar automáticamente'}
+                </button>
+              </div>
+              <small>{indication.length}/200 caracteres</small>
+            </fieldset>
+          )}
         </section>
       )}
     </main>

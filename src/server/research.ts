@@ -90,6 +90,7 @@ export type ResearchExpedition = {
   userId: string
   title: string
   premise: string
+  narrative: string
   status: 'active' | 'completed'
   baselineUnique: number
   objectives: ResearchObjective[]
@@ -104,10 +105,11 @@ type StoredResearchObjective = Omit<ResearchObjective, 'criterion'> & {
 
 type StoredResearchExpedition = Omit<
   ResearchExpedition,
-  'generation' | 'objectives'
+  'generation' | 'objectives' | 'narrative'
 > & {
   generation?: ResearchGeneration
   objectives: StoredResearchObjective[]
+  narrative?: string
 }
 
 type ExecutableCandidate = ResearchProposalInput['candidates'][number] & {
@@ -235,12 +237,7 @@ export function buildResearchCandidates(
   return candidates.slice(0, 6)
 }
 
-export function buildExpedition(
-  userId: string,
-  entries: CollectionEntry[],
-  now = new Date(),
-): ResearchExpedition {
-  const candidates = buildResearchCandidates(entries)
+function selectResearchCandidates(candidates: ExecutableCandidate[]) {
   const typeObjectives = candidates
     .filter((candidate) => candidate.objective.criterion.kind === 'has-type')
     .slice(0, 2)
@@ -250,17 +247,30 @@ export function buildExpedition(
   if (selected.length < 2 && candidates[1] !== undefined) {
     selected.push(candidates[1])
   }
+  return { selected, typeObjectives }
+}
+
+export function buildExpedition(
+  userId: string,
+  entries: CollectionEntry[],
+  now = new Date(),
+): ResearchExpedition {
+  const candidates = buildResearchCandidates(entries)
+  const { selected, typeObjectives } = selectResearchCandidates(candidates)
+  const title =
+    typeObjectives.length > 0
+      ? 'Cartografía de hábitats'
+      : 'Ampliación del índice'
+  const premise =
+    typeObjectives.length > 0
+      ? 'Completa vacíos de tipos y amplía el registro con evidencia de tu colección.'
+      : 'Amplía la diversidad de tu registro con nuevas especies.'
 
   return {
     userId,
-    title:
-      typeObjectives.length > 0
-        ? 'Cartografía de hábitats'
-        : 'Ampliación del índice',
-    premise:
-      typeObjectives.length > 0
-        ? 'Completa vacíos de tipos y amplía el registro con evidencia de tu colección.'
-        : 'Amplía la diversidad de tu registro con nuevas especies.',
+    title,
+    premise,
+    narrative: premise,
     status: 'active',
     baselineUnique: entries.length,
     objectives: selected.map((candidate) => candidate.objective),
@@ -297,6 +307,7 @@ function normalizeExpedition(
 ): ResearchExpedition {
   return {
     ...expedition,
+    narrative: expedition.narrative ?? expedition.premise,
     objectives: expedition.objectives.map((objective) => ({
       ...objective,
       criterion: legacyCriterion(objective),
@@ -355,32 +366,20 @@ function cleanExpedition(
 function buildKimiExpedition(
   userId: string,
   entries: CollectionEntry[],
-  proposal: ResearchProposal,
+  narrative: ResearchProposal,
   candidates: ExecutableCandidate[],
   now: Date,
 ): ResearchExpedition {
-  const candidateByKey = new Map(
-    candidates.map((candidate) => [candidate.key, candidate]),
-  )
-  const selectedKeys = proposal.objectiveKeys
-  if (
-    selectedKeys.length < 2 ||
-    selectedKeys.length > 3 ||
-    new Set(selectedKeys).size !== selectedKeys.length ||
-    selectedKeys.some((key) => !candidateByKey.has(key))
-  ) {
-    throw new Error('Invalid verified research proposal')
-  }
+  const { selected } = selectResearchCandidates(candidates)
 
   return {
     userId,
-    title: proposal.title,
-    premise: proposal.premise,
+    title: 'Investigación de colección',
+    premise: narrative,
+    narrative,
     status: 'active',
     baselineUnique: entries.length,
-    objectives: selectedKeys.map(
-      (key) => (candidateByKey.get(key) as ExecutableCandidate).objective,
-    ),
+    objectives: selected.map((candidate) => candidate.objective),
     generation: { mode: 'kimi', model: KIMI_MODEL, generatedAt: now },
     createdAt: now,
     updatedAt: now,
