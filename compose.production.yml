@@ -22,8 +22,6 @@ services:
       MCP_SUBJECT: ${MCP_SUBJECT:-}
       KIMI_LIVE_ENABLED: ${KIMI_LIVE_ENABLED:-false}
       MOONSHOT_API_KEY: ${MOONSHOT_API_KEY:-}
-      KIMI_TIMEOUT_MS: ${KIMI_TIMEOUT_MS:-10000}
-      KIMI_VISION_TIMEOUT_MS: ${KIMI_VISION_TIMEOUT_MS:-30000}
     healthcheck:
       test:
         [
