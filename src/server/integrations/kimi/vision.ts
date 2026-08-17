@@ -3,18 +3,16 @@ import '@tanstack/react-start/server-only'
 import { Buffer } from 'node:buffer'
 
 import {
-  executeKimiRequest,
-  parseKimiResponse,
+  executeKimiStreamRequest,
+  parseKimiStreamResponse,
   validateAdapterOptions,
 } from '@/server/integrations/kimi/client'
 import {
   type ImageInput,
   imageInputSchema,
   KIMI_DEFAULT_PROMPT,
-  KIMI_MAX_COMPLETION_TOKENS,
   KIMI_MODEL,
   KIMI_RESPONSE_FORMAT,
-  KIMI_TEMPERATURE,
   KIMI_THINKING,
   KimiAdapterError,
   type KimiAdapterOptions,
@@ -62,17 +60,16 @@ export function createKimiAdapter(options: KimiAdapterOptions): KimiPort {
           },
         ],
         response_format: KIMI_RESPONSE_FORMAT,
-        stream: false as const,
+        stream: true as const,
         thinking: KIMI_THINKING,
-        temperature: KIMI_TEMPERATURE,
-        max_completion_tokens: KIMI_MAX_COMPLETION_TOKENS,
       }
 
-      return executeKimiRequest(
+      return executeKimiStreamRequest(
         validated,
         requestBody,
         analyzeOptions.signal,
-        parseKimiResponse,
+        parseKimiStreamResponse,
+        analyzeOptions.onReasoning,
       )
     },
   }
@@ -91,8 +88,5 @@ export function createConfiguredKimiAdapter(
     apiKey: config.apiKey,
     baseUrl: options.baseUrl,
     fetch: options.fetch,
-    // Multimodal inference regularly needs longer than text-only requests,
-    // especially for camera photos that must first be decoded by the provider.
-    timeoutMs: config.visionTimeoutMs,
   })
 }
