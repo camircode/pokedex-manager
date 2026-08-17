@@ -12,264 +12,6 @@
 .insight-report h2 {
   margin: 0;
 }
-.insight-evidence {
-  display: grid;
-  grid-template-columns: minmax(14rem, 0.7fr) minmax(18rem, 1.3fr);
-  gap: 2rem;
-  margin-bottom: 2rem;
-  padding: 1.5rem 0;
-  border-top: 2px solid var(--ink);
-  border-bottom: 1px solid var(--line);
-}
-.insight-evidence h2,
-.insight-evidence .report-label {
-  margin: 0;
-}
-.insight-evidence h2 {
-  margin-top: 0.35rem;
-  font-family: var(--font-body);
-  font-size: 1.15rem;
-}
-.insight-evidence dl {
-  margin: 0;
-}
-.insight-evidence dl > div {
-  display: grid;
-  grid-template-columns: 7rem 1fr;
-  gap: 1rem;
-  padding: 0.65rem 0;
-  border-top: 1px solid var(--line);
-}
-.insight-evidence dl > div:first-child {
-  padding-top: 0;
-  border-top: 0;
-}
-.insight-evidence dt {
-  color: var(--muted);
-  font-size: 0.75rem;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-.insight-evidence dd {
-  margin: 0;
-  font-weight: 700;
-}
-.insight-analysis {
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
-}
-.insight-analysis > header {
-  padding: clamp(1.5rem, 4vw, 2.5rem);
-  border-bottom: 1px solid var(--line);
-}
-.insight-analysis > header h2 {
-  margin: 0.35rem 0 1.25rem;
-  font-family: var(--font-body);
-  font-size: 1.35rem;
-}
-.ai-markdown {
-  max-width: 72ch;
-  overflow-wrap: anywhere;
-}
-.ai-markdown > :first-child {
-  margin-top: 0;
-}
-.ai-markdown > :last-child {
-  margin-bottom: 0;
-}
-.ai-markdown h1,
-.ai-markdown h2,
-.ai-markdown h3 {
-  margin: 1.15rem 0 0.45rem;
-  font-family: var(--font-body);
-  font-size: 1rem;
-}
-.ai-markdown p {
-  margin: 0;
-}
-.ai-markdown p + p {
-  margin-top: 0.8rem;
-}
-.ai-markdown ul,
-.ai-markdown ol {
-  margin: 0.65rem 0 0;
-  padding-left: 1.4rem;
-}
-.ai-markdown li + li {
-  margin-top: 0.3rem;
-}
-.ai-markdown blockquote {
-  margin: 0.8rem 0 0;
-  padding-left: 0.9rem;
-  border-left: 1px solid var(--line-strong);
-  color: var(--muted);
-}
-.ai-markdown pre {
-  max-width: 100%;
-  overflow-x: auto;
-  padding: 0.8rem;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-.ai-markdown a {
-  overflow-wrap: anywhere;
-}
-.insight-evidence-details {
-  padding: 0 clamp(1.5rem, 4vw, 2.5rem);
-}
-.insight-evidence-details summary {
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  color: var(--muted);
-  font-size: 0.82rem;
-  font-weight: 750;
-  cursor: pointer;
-}
-.insight-evidence-details dl {
-  margin: 0 0 1.5rem;
-}
-.insight-evidence-details dl > div {
-  display: grid;
-  grid-template-columns: 10rem 1fr;
-  gap: 1rem;
-  padding: 0.7rem 0;
-  border-top: 1px solid var(--line);
-}
-.insight-evidence-details dt {
-  color: var(--muted);
-  font-size: 0.75rem;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-.insight-evidence-details dd {
-  margin: 0;
-}
-.expedition-sheet {
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
-}
-.expedition-sheet > header,
-.expedition-sheet > footer {
-  padding: clamp(1.5rem, 4vw, 2.5rem);
-}
-.expedition-sheet > header {
-  border-bottom: 1px solid var(--line);
-}
-.expedition-sheet > header h2 {
-  margin: 0.35rem 0 1rem;
-}
-.expedition-objectives {
-  padding-top: 1.5rem;
-}
-.expedition-objectives > header {
-  padding: 0 clamp(1.5rem, 4vw, 2.5rem) 1rem;
-}
-.expedition-objectives > header p,
-.expedition-objectives > header h3 {
-  margin: 0;
-}
-.expedition-objectives > header h3 {
-  margin-top: 0.35rem;
-  font-family: var(--font-body);
-  font-size: 1.05rem;
-}
-.research-generation-action {
-  max-width: 25rem;
-  display: grid;
-  justify-items: end;
-  gap: 0.5rem;
-  text-align: right;
-}
-/* biome-ignore lint/style/noDescendingSpecificity: This selector belongs to a separate component. */
-.research-generation-action small {
-  color: var(--muted);
-}
-.expedition-provenance {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  min-height: 30px;
-  padding: 0.25rem 0.6rem;
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  color: var(--muted);
-  font-size: 0.72rem;
-  font-weight: 800;
-}
-.status-badge.active {
-  color: var(--success);
-  border-color: #76a98a;
-}
-.status-badge.inactive {
-  color: var(--warning);
-  border-color: #c1a267;
-}
-.objective-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.objective-list li {
-  display: grid;
-  grid-template-columns: 2rem 1fr;
-  gap: 1rem;
-  padding: 1.3rem clamp(1.5rem, 4vw, 2.5rem);
-  border-bottom: 1px solid var(--line);
-}
-.objective-list li > div {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 0.5rem 1rem;
-}
-.objective-list progress {
-  grid-column: 1 / -1;
-  width: 100%;
-  accent-color: var(--accent);
-}
-.objective-mark {
-  color: var(--accent);
-  font-size: 1.35rem;
-}
-.objective-list .complete .objective-mark {
-  color: var(--success);
-}
-.expedition-sheet > footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-}
-.expedition-sheet > footer p {
-  margin: 0;
-}
-.settings-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 2rem;
-  align-items: start;
-  padding: 1.5rem 0;
-  border-top: 1px solid var(--line-strong);
-}
-.settings-row p {
-  max-width: 72ch;
-  margin-bottom: 0;
-}
-code {
-  padding: 0.1em 0.25em;
-  background: #e5e5dd;
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
-  font-size: 0.9em;
-}
-
-/* Prompt Kit Steps reasoning stream */
 .ai-reasoning {
   margin-bottom: 2rem;
   padding: 1rem 0;
@@ -423,8 +165,264 @@ code {
     transform: rotate(360deg);
   }
 }
+.insight-evidence {
+  display: grid;
+  grid-template-columns: minmax(14rem, 0.7fr) minmax(18rem, 1.3fr);
+  gap: 2rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem 0;
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid var(--line);
+}
+.insight-evidence h2,
+.insight-evidence .report-label {
+  margin: 0;
+}
+.insight-evidence h2 {
+  margin-top: 0.35rem;
+  font-family: var(--font-body);
+  font-size: 1.15rem;
+}
+.insight-evidence dl {
+  margin: 0;
+}
+.insight-evidence dl > div {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: 1rem;
+  padding: 0.65rem 0;
+  border-top: 1px solid var(--line);
+}
+.insight-evidence dl > div:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+.insight-evidence dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.insight-evidence dd {
+  margin: 0;
+  font-weight: 700;
+}
+.insight-analysis {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+.insight-analysis > header {
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border-bottom: 1px solid var(--line);
+}
+.insight-analysis > header h2 {
+  margin: 0.35rem 0 1.25rem;
+  font-family: var(--font-body);
+  font-size: 1.35rem;
+}
+.ai-markdown {
+  max-width: 72ch;
+  overflow-wrap: anywhere;
+}
+.ai-markdown > :first-child {
+  margin-top: 0;
+}
+.ai-markdown > :last-child {
+  margin-bottom: 0;
+}
+.ai-markdown h1,
+.ai-markdown h2,
+.ai-markdown h3 {
+  margin: 1.15rem 0 0.45rem;
+  font-family: var(--font-body);
+  font-size: 1rem;
+}
+.ai-markdown p {
+  margin: 0;
+}
+.ai-markdown p + p {
+  margin-top: 0.8rem;
+}
+.ai-markdown ul,
+.ai-markdown ol {
+  margin: 0.65rem 0 0;
+  padding-left: 1.4rem;
+}
+.ai-markdown li + li {
+  margin-top: 0.3rem;
+}
+.ai-markdown blockquote {
+  margin: 0.8rem 0 0;
+  padding-left: 0.9rem;
+  border-left: 1px solid var(--line-strong);
+  color: var(--muted);
+}
+.ai-markdown pre {
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 0.8rem;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ai-markdown a {
+  overflow-wrap: anywhere;
+}
 .ai-reasoning-item .ai-markdown,
 .ai-reasoning-item .ai-markdown > :first-child,
 .ai-reasoning-item .ai-markdown > :last-child {
   margin-block: 0;
+}
+.insight-evidence-details {
+  padding: 0 clamp(1.5rem, 4vw, 2.5rem);
+}
+.insight-evidence-details summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+.insight-evidence-details dl {
+  margin: 0 0 1.5rem;
+}
+.insight-evidence-details dl > div {
+  display: grid;
+  grid-template-columns: 10rem 1fr;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-top: 1px solid var(--line);
+}
+.insight-evidence-details dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.insight-evidence-details dd {
+  margin: 0;
+}
+.expedition-sheet {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+.expedition-sheet > header,
+.expedition-sheet > footer {
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+}
+.expedition-sheet > header {
+  border-bottom: 1px solid var(--line);
+}
+.expedition-sheet > header h2 {
+  margin: 0.35rem 0 1rem;
+}
+.expedition-objectives {
+  padding-top: 1.5rem;
+}
+.expedition-objectives > header {
+  padding: 0 clamp(1.5rem, 4vw, 2.5rem) 1rem;
+}
+.expedition-objectives > header p,
+.expedition-objectives > header h3 {
+  margin: 0;
+}
+.expedition-objectives > header h3 {
+  margin-top: 0.35rem;
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+}
+.research-generation-action {
+  max-width: 25rem;
+  display: grid;
+  justify-items: end;
+  gap: 0.5rem;
+  text-align: right;
+}
+.research-generation-action small {
+  color: var(--muted);
+}
+.expedition-provenance {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+.status-badge.active {
+  color: var(--success);
+  border-color: #76a98a;
+}
+.status-badge.inactive {
+  color: var(--warning);
+  border-color: #c1a267;
+}
+.objective-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* biome-ignore lint/style/noDescendingSpecificity: This selector belongs to a separate component. */
+.objective-list li {
+  display: grid;
+  grid-template-columns: 2rem 1fr;
+  gap: 1rem;
+  padding: 1.3rem clamp(1.5rem, 4vw, 2.5rem);
+  border-bottom: 1px solid var(--line);
+}
+.objective-list li > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem 1rem;
+}
+.objective-list progress {
+  grid-column: 1 / -1;
+  width: 100%;
+  accent-color: var(--accent);
+}
+.objective-mark {
+  color: var(--accent);
+  font-size: 1.35rem;
+}
+.objective-list .complete .objective-mark {
+  color: var(--success);
+}
+.expedition-sheet > footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+.expedition-sheet > footer p {
+  margin: 0;
+}
+.settings-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2rem;
+  align-items: start;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--line-strong);
+}
+.settings-row p {
+  max-width: 72ch;
+  margin-bottom: 0;
+}
+code {
+  padding: 0.1em 0.25em;
+  background: #e5e5dd;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.9em;
 }
