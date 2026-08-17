@@ -426,6 +426,64 @@ describe('assistant ownership, persistence and no-key behavior', () => {
     )
   })
 
+  it('lets Kimi search by catalog filters without inventing a name query', async () => {
+    const complete = vi
+      .fn<KimiChatPort['complete']>()
+      .mockResolvedValueOnce({
+        finishReason: 'tool_calls',
+        content: '',
+        toolCalls: [
+          {
+            id: 'search:filters',
+            name: 'search_pokemon',
+            arguments:
+              '{"type":"grass","generation":"generation-i","sort":"attack-desc","limit":5}',
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
+        finishReason: 'stop',
+        content: 'Puedes agregar a Bulbasaur como opción de tipo planta. [1]',
+        toolCalls: [],
+      })
+    const calls: ReadonlyPortInput[] = []
+    const service = createAssistantService(database, {
+      chat: { complete },
+      connectMcp: createAssistantMcp(calls),
+    })
+
+    const sent = await service.send('owner-filter-search', {
+      message: 'Busca Pokémon de tipo planta de la primera generación',
+    })
+
+    expect(sent.message.toolCalls).toEqual([
+      {
+        name: 'search_pokemon',
+        input: {
+          type: 'grass',
+          generation: 'generation-i',
+          sort: 'attack-desc',
+          limit: 5,
+        },
+      },
+    ])
+    expect(calls).toContainEqual(
+      expect.objectContaining({
+        operation: 'search_pokemon',
+        input: {
+          type: 'grass',
+          generation: 'generation-i',
+          sort: 'attack-desc',
+          limit: 5,
+        },
+      }),
+    )
+    expect(complete.mock.calls[0]?.[0].messages[0]).toMatchObject({
+      role: 'system',
+      content: expect.stringMatching(/filtros estructurados/i),
+    })
+  })
+
   it('finishes a broad recommendation instead of exposing the tool budget', async () => {
     const complete = vi
       .fn<KimiChatPort['complete']>()

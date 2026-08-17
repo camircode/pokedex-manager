@@ -15,7 +15,12 @@ export const productReadonlyPort: ReadonlyToolPort = {
         const requestedLimit =
           typeof input.limit === 'number' ? input.limit : 20
         const result = await catalog.list({
-          query: input.query,
+          query: input.query ?? '',
+          type: input.type ?? '',
+          generation: input.generation ?? '',
+          ability: input.ability ?? '',
+          category: input.category ?? '',
+          sort: input.sort ?? 'id-asc',
           limit: Math.max(requestedLimit, 5),
           page: 1,
         })

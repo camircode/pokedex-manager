@@ -352,7 +352,12 @@ describe('MCP Streamable HTTP runtime contract', () => {
     const [firstResult, secondResult] = await Promise.all([
       first.client.callTool({
         name: 'search_pokemon',
-        arguments: { query: 'pikachu' },
+        arguments: {
+          type: 'fire',
+          generation: 'generation-i',
+          sort: 'attack-desc',
+          limit: 5,
+        },
       }),
       second.client.callTool({
         name: 'search_pokemon',
@@ -381,6 +386,43 @@ describe('MCP Streamable HTTP runtime contract', () => {
         'compare_pokemon',
         'get_research_progress',
       ]),
+    )
+    const searchTool = listedTools.tools.find(
+      ({ name }) => name === 'search_pokemon',
+    )
+    expect(searchTool).toMatchObject({
+      description: expect.stringMatching(/structured attributes/i),
+      inputSchema: {
+        properties: {
+          query: {
+            description: expect.stringMatching(/name or numeric ID/i),
+          },
+          type: {
+            description: expect.stringMatching(/canonical English type/i),
+            enum: expect.arrayContaining(['fire', 'grass']),
+          },
+          generation: {
+            enum: expect.arrayContaining(['generation-i', 'generation-ix']),
+          },
+          ability: expect.objectContaining({ type: 'string' }),
+          category: expect.objectContaining({ type: 'string' }),
+          sort: {
+            enum: expect.arrayContaining(['id-asc', 'attack-desc']),
+          },
+          limit: expect.objectContaining({ maximum: 20, minimum: 1 }),
+        },
+      },
+    })
+    expect(calls).toContainEqual(
+      expect.objectContaining({
+        operation: 'search_pokemon',
+        input: {
+          type: 'fire',
+          generation: 'generation-i',
+          sort: 'attack-desc',
+          limit: 5,
+        },
+      }),
     )
 
     const crossUserRequest = await request(harness.baseUrl, {
