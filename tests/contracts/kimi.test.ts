@@ -12,13 +12,8 @@ import {
   createKimiChatAdapter,
   createKimiInsightsAdapter,
   createKimiResearchAdapter,
-  KIMI_ASSISTANT_MAX_COMPLETION_TOKENS,
-  KIMI_MAX_COMPLETION_TOKENS,
-  KIMI_INSIGHTS_MAX_COMPLETION_TOKENS,
   KIMI_MODEL,
-  KIMI_RESEARCH_MAX_COMPLETION_TOKENS,
   KIMI_RESPONSE_FORMAT,
-  KIMI_TEMPERATURE,
   KIMI_THINKING,
   KimiAdapterError,
   loadKimiConfig,
@@ -47,7 +42,7 @@ type CapturedRequest = {
   stream: boolean
   thinking?: { type: string }
   temperature?: number
-  max_completion_tokens: number
+  max_completion_tokens?: number
 }
 
 type MockReply = {
@@ -86,25 +81,51 @@ async function startMockKimiServer(
       const result = typeof reply === 'function' ? reply(captured) : reply
       const sendResponse = () => {
         response.statusCode = result.status ?? 200
-        response.setHeader('content-type', 'application/json')
-        response.end(
-          result.raw ??
-            JSON.stringify(
-              result.payload ?? {
-                choices: [
-                  {
-                    finish_reason: 'stop',
-                    message: {
-                      content: JSON.stringify({
-                        pokemonId: 25,
-                        name: 'pikachu',
-                      }),
-                    },
-                  },
-                ],
+        const payload = (result.payload ?? {
+          choices: [
+            {
+              finish_reason: 'stop',
+              message: {
+                content: JSON.stringify({ pokemonId: 25, name: 'pikachu' }),
               },
-            ),
-        )
+            },
+          ],
+        }) as {
+          choices?: Array<{
+            finish_reason?: string
+            message?: {
+              content?: string
+              reasoning_content?: string
+              tool_calls?: Array<Record<string, unknown>>
+            }
+          }>
+        }
+        if (captured.stream && result.status === undefined) {
+          response.setHeader('content-type', 'text/event-stream')
+          if (result.raw !== undefined) {
+            response.end(result.raw)
+            return
+          }
+          const choices = (payload.choices ?? []).map((choice) => ({
+            finish_reason: choice.finish_reason ?? null,
+            delta: {
+              content: choice.message?.content,
+              reasoning_content: choice.message?.reasoning_content,
+              tool_calls: choice.message?.tool_calls?.map(
+                (toolCall, index) => ({
+                  index,
+                  ...toolCall,
+                }),
+              ),
+            },
+          }))
+          response.end(
+            `data: ${JSON.stringify({ choices })}\n\ndata: [DONE]\n\n`,
+          )
+          return
+        }
+        response.setHeader('content-type', 'application/json')
+        response.end(result.raw ?? JSON.stringify(payload))
       }
 
       if (result.delayMs === undefined) sendResponse()
@@ -136,16 +157,12 @@ async function startMockKimiServer(
   }
 }
 
-async function analyzeWithMock(
-  reply: MockReply,
-  options: { timeoutMs?: number } = {},
-) {
+async function analyzeWithMock(reply: MockReply) {
   const server = await startMockKimiServer(reply)
   try {
     const adapter = createKimiAdapter({
       apiKey: 'deterministic-contract-key',
       baseUrl: server.baseUrl,
-      timeoutMs: options.timeoutMs ?? 500,
     })
     const result = await adapter.analyzeImage({
       image: fixtureBytes,
@@ -194,10 +211,10 @@ describe('Kimi direct adapter contract', () => {
       expect(server.authorizationHeaders[0]).toBe(
         'Bearer deterministic-contract-key',
       )
-      expect(request.stream).toBe(false)
+      expect(request.stream).toBe(true)
       expect(request.thinking).toEqual(KIMI_THINKING)
-      expect(request.temperature).toBe(KIMI_TEMPERATURE)
-      expect(request.max_completion_tokens).toBe(KIMI_MAX_COMPLETION_TOKENS)
+      expect(request.temperature).toBeUndefined()
+      expect(request.max_completion_tokens).toBeUndefined()
       expect(request.messages).toHaveLength(1)
       expect(request.messages[0]?.role).toBe('user')
       const content = request.messages[0]?.content
@@ -217,6 +234,44 @@ describe('Kimi direct adapter contract', () => {
         'deterministic-contract-key',
       )
       expect(request.response_format).toEqual(KIMI_RESPONSE_FORMAT)
+    } finally {
+      await server.close()
+    }
+  })
+
+  it('forwards Kimi reasoning_content as it streams', async () => {
+    const server = await startMockKimiServer({
+      payload: {
+        choices: [
+          {
+            finish_reason: 'stop',
+            message: {
+              reasoning_content: 'La silueta y la cola coinciden con Pikachu.',
+              content: JSON.stringify({ pokemonId: 25, name: 'pikachu' }),
+            },
+          },
+        ],
+      },
+    })
+    const reasoning: string[] = []
+
+    try {
+      const adapter = createKimiAdapter({
+        apiKey: 'deterministic-contract-key',
+        baseUrl: server.baseUrl,
+      })
+      await adapter.analyzeImage(
+        { image: fixtureBytes, mediaType: 'image/svg+xml' },
+        {
+          onReasoning: (delta) => {
+            reasoning.push(delta)
+          },
+        },
+      )
+
+      expect(reasoning.join('')).toBe(
+        'La silueta y la cola coinciden con Pikachu.',
+      )
     } finally {
       await server.close()
     }
@@ -262,12 +317,10 @@ describe('Kimi direct adapter contract', () => {
 
       const request = server.requests[0]
       expect(request?.model).toBe('kimi-k2.6')
-      expect(request?.stream).toBe(false)
+      expect(request?.stream).toBe(true)
       expect(request?.thinking).toEqual(KIMI_THINKING)
-      expect(request?.temperature).toBe(KIMI_TEMPERATURE)
-      expect(request?.max_completion_tokens).toBe(
-        KIMI_RESEARCH_MAX_COMPLETION_TOKENS,
-      )
+      expect(request?.temperature).toBeUndefined()
+      expect(request?.max_completion_tokens).toBeUndefined()
       expect(request?.response_format).toBeUndefined()
       expect(typeof request?.messages[0]?.content).toBe('string')
       const serialized = JSON.stringify(request)
@@ -316,10 +369,8 @@ describe('Kimi direct adapter contract', () => {
         }),
       ).resolves.toContain('La colección tiene una base compacta')
       expect(server.requests[0]?.thinking).toEqual(KIMI_THINKING)
-      expect(server.requests[0]?.temperature).toBe(KIMI_TEMPERATURE)
-      expect(server.requests[0]?.max_completion_tokens).toBe(
-        KIMI_INSIGHTS_MAX_COMPLETION_TOKENS,
-      )
+      expect(server.requests[0]?.temperature).toBeUndefined()
+      expect(server.requests[0]?.max_completion_tokens).toBeUndefined()
       expect(server.requests[0]?.response_format).toBeUndefined()
     } finally {
       await server.close()
@@ -379,6 +430,7 @@ describe('Kimi direct adapter contract', () => {
       ).resolves.toEqual({
         finishReason: 'tool_calls',
         content: '',
+        reasoningContent: '',
         toolCalls: [
           {
             id: 'getCollectionStats:0',
@@ -392,11 +444,9 @@ describe('Kimi direct adapter contract', () => {
       expect(server.requests[0]?.tools?.[0]?.function.name).toBe(
         'getCollectionStats',
       )
-      expect(server.requests[0]?.max_completion_tokens).toBe(
-        KIMI_ASSISTANT_MAX_COMPLETION_TOKENS,
-      )
+      expect(server.requests[0]?.max_completion_tokens).toBeUndefined()
       expect(server.requests[0]?.thinking).toEqual(KIMI_THINKING)
-      expect(server.requests[0]?.temperature).toBe(KIMI_TEMPERATURE)
+      expect(server.requests[0]?.temperature).toBeUndefined()
     } finally {
       await server.close()
     }
@@ -691,17 +741,16 @@ describe('Kimi direct adapter contract', () => {
     }
   })
 
-  it('enforces both adapter timeout and caller AbortSignal', async () => {
-    const timeoutAttempt = await analyzeWithMock(
-      { delayMs: 300, payload: { choices: [] } },
-      { timeoutMs: 100 },
-    )
+  it('waits for a delayed provider response without an application deadline', async () => {
+    const delayedAttempt = await analyzeWithMock({ delayMs: 150 })
     try {
-      expect(timeoutAttempt.error).toMatchObject({ code: 'KIMI_TIMEOUT' })
+      expect(delayedAttempt.result).toEqual({ pokemonId: 25, name: 'pikachu' })
     } finally {
-      await timeoutAttempt.server.close()
+      await delayedAttempt.server.close()
     }
+  })
 
+  it('still honors an explicit caller AbortSignal', async () => {
     const server = await startMockKimiServer({
       delayMs: 100,
       payload: { choices: [] },
@@ -710,7 +759,6 @@ describe('Kimi direct adapter contract', () => {
       const adapter = createKimiAdapter({
         apiKey: 'deterministic-contract-key',
         baseUrl: server.baseUrl,
-        timeoutMs: 500,
       })
       const controller = new AbortController()
       const request = adapter.analyzeImage(
@@ -757,12 +805,10 @@ describe('Kimi direct adapter contract', () => {
       loadKimiConfig({
         KIMI_LIVE_ENABLED: 'true',
         MOONSHOT_API_KEY: 'deterministic-config-key',
-        KIMI_VISION_TIMEOUT_MS: '45000',
       }),
     ).toMatchObject({
       enabled: true,
       apiKey: 'deterministic-config-key',
-      visionTimeoutMs: 45_000,
     })
     expect(() =>
       createConfiguredKimiAdapter({ KIMI_LIVE_ENABLED: 'false' }),
@@ -787,5 +833,40 @@ describe('Kimi direct adapter contract', () => {
       expect(result.pokemonId).toBeGreaterThan(0)
       expect(result.name).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
     },
+  )
+
+  it.skipIf(!liveOptIn)(
+    'streams live Kimi reasoning for a narrative request',
+    async () => {
+      const reasoning: string[] = []
+      const adapter = createKimiInsightsAdapter({
+        apiKey: process.env.MOONSHOT_API_KEY ?? '',
+      })
+      const narrative = await adapter.propose(
+        {
+          facts: [
+            {
+              key: 'collection-size',
+              label: 'Tamaño',
+              fact: '1 especie y 1 ejemplar.',
+            },
+            {
+              key: 'favorites',
+              label: 'Curaduría',
+              fact: '0 especies favoritas.',
+            },
+          ],
+        },
+        {
+          onReasoning: (delta) => {
+            reasoning.push(delta)
+          },
+        },
+      )
+
+      expect(reasoning.join('').length).toBeGreaterThan(0)
+      expect(narrative.length).toBeGreaterThanOrEqual(20)
+    },
+    120_000,
   )
 })
