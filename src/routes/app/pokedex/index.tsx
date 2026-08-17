@@ -373,13 +373,13 @@ function PokemonRow({ pokemon, search }: PokemonRowProps) {
         #{String(pokemon.pokemonId).padStart(4, '0')}
       </span>
       <span data-label="Especie" className="species-cell">
-        {(pokemon.catalogSprite ?? pokemon.sprite) && (
+        {pokemon.sprite && (
           <span
             className="pokemon-artwork-frame catalog-artwork-frame"
             style={pokemonTransitionStyle(transitionActive, 'artwork')}
           >
             <img
-              src={pokemon.catalogSprite ?? pokemon.sprite ?? undefined}
+              src={pokemon.sprite}
               alt=""
               width="64"
               height="64"
