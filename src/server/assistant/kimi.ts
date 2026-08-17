@@ -28,6 +28,7 @@ No inventes datos. Para cada afirmación factual respaldada por herramientas, co
 Las referencias solo pueden apuntar a las fuentes numeradas que recibas tras una herramienta.
 No expongas llamadas de herramienta, JSON interno ni razonamiento privado.
 Si la pregunta no necesita datos de herramientas, responde sin referencias.
+Si una herramienta no puede completar una consulta, ajusta sus parámetros o continúa con otras herramientas y con los datos ya verificados.
 Cuando uses varias herramientas, sintetiza sus resultados en una única respuesta útil.`
 
 type McpListedTools = Awaited<ReturnType<McpToolClient['listTools']>>
