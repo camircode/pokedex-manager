@@ -1,4 +1,3 @@
-import { BrainCircuit, Check, LoaderCircle, Wrench } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 
 import { AiMarkdown } from '@/components/ai-markdown'
@@ -16,6 +15,28 @@ export type AiReasoningItem = {
   kind?: 'reasoning' | 'tool'
 }
 
+function reasoningTitle(block: string, index: number) {
+  const clean = (value: string) =>
+    value
+      .replace(/[*_`#>[\]]/g, '')
+      .replace(/^[-+•]\s+/, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+  const firstLine = block.split('\n').map(clean).find(Boolean)
+  if (firstLine?.endsWith(':') || (firstLine?.length ?? 0) <= 56) {
+    return firstLine ?? `Paso ${index + 1}`
+  }
+  const plain = block
+    .replace(/```[\s\S]*?```/g, ' ')
+    .split('\n')
+    .map(clean)
+    .join(' ')
+  if (plain.length === 0) return `Paso ${index + 1}`
+  const sentence = plain.match(/^.{1,96}?[.!?](?:\s|$)/)?.[0]?.trim()
+  const title = sentence ?? plain
+  return title.length <= 96 ? title : `${title.slice(0, 93).trimEnd()}…`
+}
+
 export function reasoningItems(content: string): AiReasoningItem[] {
   return content
     .split(/\n\s*\n/)
@@ -23,9 +44,44 @@ export function reasoningItems(content: string): AiReasoningItem[] {
     .filter(Boolean)
     .map((block, index) => ({
       id: `reasoning-${index}`,
-      content: <AiMarkdown content={block} />,
+      content: reasoningTitle(block, index),
+      detail: <AiMarkdown content={block} />,
       kind: 'reasoning' as const,
     }))
+}
+
+function ReasoningStep({
+  active,
+  item,
+}: {
+  active: boolean
+  item: AiReasoningItem
+}) {
+  const [open, setOpen] = useState(active)
+
+  useEffect(() => {
+    setOpen(active)
+  }, [active])
+
+  const iconClass = active
+    ? 'hn hn-refresh spinning'
+    : item.kind === 'tool'
+      ? 'hn hn-cog'
+      : 'hn hn-sparkles'
+
+  return (
+    <StepsItem
+      className={`ai-reasoning-item ${item.kind ?? 'reasoning'}${active ? ' active' : ''}`}
+      icon={<i className={iconClass} />}
+      open={open}
+      onOpenChange={setOpen}
+      title={item.content}
+    >
+      {item.detail && (
+        <div className="ai-reasoning-item-detail">{item.detail}</div>
+      )}
+    </StepsItem>
+  )
 }
 
 export function AiReasoning({
@@ -54,9 +110,9 @@ export function AiReasoning({
       <StepsTrigger
         leftIcon={
           streaming ? (
-            <LoaderCircle className="ai-reasoning-icon spinning" />
+            <i className="hn hn-refresh ai-reasoning-icon spinning" />
           ) : (
-            <BrainCircuit className="ai-reasoning-icon" />
+            <i className="hn hn-check ai-reasoning-icon" />
           )
         }
       >
@@ -66,36 +122,21 @@ export function AiReasoning({
         </span>
       </StepsTrigger>
       <StepsContent>
-        {items.map((item) => (
-          <StepsItem
-            className={`ai-reasoning-item ${item.kind ?? 'reasoning'}`}
+        {items.map((item, index) => (
+          <ReasoningStep
+            active={streaming && index === items.length - 1}
+            item={item}
             key={item.id}
-          >
-            <span className="ai-reasoning-item-icon" aria-hidden="true">
-              {item.kind === 'tool' ? (
-                <Wrench />
-              ) : streaming && item.id === items.at(-1)?.id ? (
-                <LoaderCircle className="spinning" />
-              ) : (
-                <Check />
-              )}
-            </span>
-            <div>
-              {item.content}
-              {item.detail && (
-                <small className="ai-reasoning-item-detail">
-                  {item.detail}
-                </small>
-              )}
-            </div>
-          </StepsItem>
+          />
         ))}
         {items.length === 0 && streaming && (
-          <StepsItem className="ai-reasoning-item waiting">
-            <span className="ai-reasoning-item-icon" aria-hidden="true">
-              <LoaderCircle className="spinning" />
-            </span>
-            <span>Esperando el razonamiento de Kimi…</span>
+          <StepsItem
+            className="ai-reasoning-item waiting"
+            icon={<i className="hn hn-refresh spinning" />}
+            open
+            title="Esperando el razonamiento de Kimi…"
+          >
+            <span>Kimi está preparando el primer paso.</span>
           </StepsItem>
         )}
       </StepsContent>
