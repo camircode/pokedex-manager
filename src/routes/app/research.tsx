@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import { AiReasoning, type AiReasoningStep } from '@/components/ai-reasoning'
 import { AiMarkdown } from '@/components/ai-markdown'
+import { AiReasoning, reasoningItems } from '@/components/ai-reasoning'
 import { EmptyState, ErrorState, LoadingState } from '@/components/status'
 import { catalogSearchDefaults } from '@/lib/catalog-query'
 import { consumeEventStream } from '@/lib/event-stream'
@@ -12,23 +12,11 @@ import type { ResearchResponse } from '@/server/research'
 
 export const Route = createFileRoute('/app/research')({ component: Research })
 
-const researchSteps: AiReasoningStep[] = [
-  { phase: 'collecting', label: 'Leer el estado actual de la colección' },
-  { phase: 'preparing', label: 'Preparar el contexto verificable' },
-  { phase: 'generating', label: 'Kimi escribe la narrativa' },
-  { phase: 'validating', label: 'Validar el resultado y el progreso' },
-  { phase: 'persisting', label: 'Guardar la expedición' },
-]
-
 function Research() {
   const [version, setVersion] = useState(0)
   const [generating, setGenerating] = useState(false)
   const [generationError, setGenerationError] = useState('')
-  const [processPhases, setProcessPhases] = useState<string[]>([])
-  const [processStatus, setProcessStatus] = useState<
-    'running' | 'complete' | 'error'
-  >('complete')
-  const [processStartedAt, setProcessStartedAt] = useState<number | null>(null)
+  const [reasoning, setReasoning] = useState('')
   const state = useApi<ResearchResponse>(`/api/research?version=${version}`)
   const expedition = state.data?.expedition
 
@@ -46,9 +34,7 @@ function Research() {
 
     setGenerating(true)
     setGenerationError('')
-    setProcessPhases([])
-    setProcessStatus('running')
-    setProcessStartedAt(Date.now())
+    setReasoning('')
     try {
       const response = await fetch('/api/research', {
         method: 'POST',
@@ -57,23 +43,20 @@ function Research() {
       await consumeEventStream<ResearchStreamEvent>(
         response,
         (event) => {
-          if (event.type === 'phase') {
-            setProcessPhases((current) =>
-              current.includes(event.phase)
-                ? current
-                : [...current, event.phase],
-            )
+          if (event.type === 'reasoning') {
+            setReasoning((current) => current + event.delta)
           } else if (event.type === 'error') {
             throw new Error(event.message)
           } else {
-            setProcessStatus('complete')
             setVersion((value) => value + 1)
           }
         },
-        { isTerminal: (event) => event.type !== 'phase' },
+        {
+          isTerminal: (event) =>
+            event.type === 'complete' || event.type === 'error',
+        },
       )
     } catch (error) {
-      setProcessStatus('error')
       setGenerationError(
         error instanceof Error
           ? error.message
@@ -130,14 +113,8 @@ function Research() {
       {state.loading && <LoadingState label="Preparando la expedición…" />}
       {state.error && <ErrorState message={state.error} />}
       {generationError && <ErrorState message={generationError} />}
-      {processStartedAt !== null && (
-        <AiReasoning
-          title="Construcción de la expedición"
-          steps={researchSteps}
-          phases={processPhases}
-          status={processStatus}
-          startedAt={processStartedAt}
-        />
+      {(generating || reasoning.length > 0) && (
+        <AiReasoning items={reasoningItems(reasoning)} streaming={generating} />
       )}
       {!state.loading && !state.error && expedition === null && (
         <EmptyState title="Aún no hay una investigación activa">

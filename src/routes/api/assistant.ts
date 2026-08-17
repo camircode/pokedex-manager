@@ -8,6 +8,7 @@ import {
 } from '@/server/assistant'
 import { requireUser } from '@/server/auth'
 import { getMongoClient } from '@/server/db/mongo-client'
+import { createEventStreamResponse } from '@/server/event-stream-response'
 import { apiError, assertTrustedMutation, readJsonBody } from '@/server/http'
 import { KimiAdapterError } from '@/server/integrations/kimi'
 import { McpClientError } from '@/server/integrations/mcp'
@@ -34,35 +35,19 @@ function streamAssistantResponse(
   userId: string,
   input: unknown,
 ) {
-  const encoder = new TextEncoder()
-  const stream = new ReadableStream<Uint8Array>({
-    async start(controller) {
-      const sendEvent = (event: AssistantStreamEvent) => {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`))
-      }
+  return createEventStreamResponse<AssistantStreamEvent>(
+    async (send, signal) => {
       try {
-        const result = await service.send(userId, input, sendEvent)
-        sendEvent({ type: 'complete', ...result })
+        const result = await service.send(userId, input, send, signal)
+        send({ type: 'complete', ...result })
       } catch (error) {
-        sendEvent({
+        send({
           type: 'error',
           message: await assistantErrorMessage(error),
         })
-      } finally {
-        controller.close()
       }
     },
-  })
-
-  return new Response(stream, {
-    status: 200,
-    headers: {
-      'Cache-Control': 'no-store',
-      'Content-Type': 'text/event-stream; charset=utf-8',
-      Connection: 'keep-alive',
-      'X-Accel-Buffering': 'no',
-    },
-  })
+  )
 }
 
 export async function assistantHandler(
@@ -84,10 +69,13 @@ export async function assistantHandler(
       if (request.headers.get('Accept')?.includes('text/event-stream')) {
         return streamAssistantResponse(service, user.id, input)
       }
-      return Response.json(await service.send(user.id, input), {
-        status: 201,
-        headers: { 'Cache-Control': 'no-store' },
-      })
+      return Response.json(
+        await service.send(user.id, input, undefined, request.signal),
+        {
+          status: 201,
+          headers: { 'Cache-Control': 'no-store' },
+        },
+      )
     }
     const url = new URL(request.url)
     const history = await service.history(user.id, {

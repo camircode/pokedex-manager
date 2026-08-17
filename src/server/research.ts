@@ -7,6 +7,7 @@ import { getCollectionService } from '@/server/collection'
 import { getMongoClient } from '@/server/db/mongo-client'
 import {
   createConfiguredKimiResearchAdapter,
+  type KimiReasoningEvent,
   KIMI_MODEL,
   loadKimiConfig,
   type ResearchProposal,
@@ -126,17 +127,7 @@ export type ResearchResponse = {
   capability: ResearchCapability
 }
 
-export type ResearchActivityPhase =
-  | 'collecting'
-  | 'preparing'
-  | 'generating'
-  | 'validating'
-  | 'persisting'
-
-export type ResearchActivityEvent = {
-  type: 'phase'
-  phase: ResearchActivityPhase
-}
+export type ResearchActivityEvent = KimiReasoningEvent
 
 function uniqueSorted(values: string[]) {
   return [...new Set(values)].sort((left, right) => left.localeCompare(right))
@@ -408,16 +399,20 @@ export function createResearchService(database: Db) {
     proposalPort: ResearchProposalPort,
     now = new Date(),
     report?: (event: ResearchActivityEvent) => void | Promise<void>,
+    signal?: AbortSignal,
   ) {
-    await report?.({ type: 'phase', phase: 'preparing' })
     const aggregate = analyzeResearchCollection(collectionEntries)
     const candidates = buildResearchCandidates(collectionEntries)
-    await report?.({ type: 'phase', phase: 'generating' })
-    const proposal = await proposalPort.propose({
-      aggregate,
-      candidates: candidates.map(({ key, label }) => ({ key, label })),
-    })
-    await report?.({ type: 'phase', phase: 'validating' })
+    const proposal = await proposalPort.propose(
+      {
+        aggregate,
+        candidates: candidates.map(({ key, label }) => ({ key, label })),
+      },
+      {
+        signal,
+        onReasoning: (delta) => report?.({ type: 'reasoning', delta }),
+      },
+    )
     const expedition = buildKimiExpedition(
       userId,
       collectionEntries,
@@ -426,7 +421,6 @@ export function createResearchService(database: Db) {
       now,
     )
 
-    await report?.({ type: 'phase', phase: 'persisting' })
     const current = await expeditions.findOne({ userId, status: 'active' })
     if (current !== null) {
       const result = await expeditions.replaceOne(
@@ -499,8 +493,8 @@ export async function getResearchResponse(
 export async function generateResearchWithKimi(
   userId: string,
   report?: (event: ResearchActivityEvent) => void | Promise<void>,
+  signal?: AbortSignal,
 ) {
-  await report?.({ type: 'phase', phase: 'collecting' })
   const { database, collection } = await getResearchDependencies()
   const entries = await collection.list(userId)
   return createResearchService(database).generate(
@@ -509,5 +503,6 @@ export async function generateResearchWithKimi(
     createConfiguredKimiResearchAdapter(),
     new Date(),
     report,
+    signal,
   )
 }

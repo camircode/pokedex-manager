@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { requireUser } from '@/server/auth'
+import { createEventStreamResponse } from '@/server/event-stream-response'
 import { apiError, assertTrustedMutation } from '@/server/http'
 import {
   type AiInsight,
@@ -23,6 +24,7 @@ type InsightsHandlerDependencies = {
   generate?: (
     userId: string,
     report?: (event: InsightsActivityEvent) => void | Promise<void>,
+    signal?: AbortSignal,
   ) => Promise<AiInsight>
   capability?: () => boolean
 }
@@ -41,14 +43,10 @@ function streamInsights(
   generate: NonNullable<InsightsHandlerDependencies['generate']>,
   userId: string,
 ) {
-  const encoder = new TextEncoder()
-  const stream = new ReadableStream<Uint8Array>({
-    async start(controller) {
-      const send = (event: InsightsStreamEvent) => {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`))
-      }
+  return createEventStreamResponse<InsightsStreamEvent>(
+    async (send, signal) => {
       try {
-        const analysis = await generate(userId, send)
+        const analysis = await generate(userId, send, signal)
         send({ type: 'complete', analysis })
       } catch (error) {
         send({
@@ -58,19 +56,9 @@ function streamInsights(
               ? 'El análisis con Kimi no está disponible en este momento.'
               : 'No se pudo generar el análisis.',
         })
-      } finally {
-        controller.close()
       }
     },
-  })
-  return new Response(stream, {
-    headers: {
-      'Cache-Control': 'no-store',
-      'Content-Type': 'text/event-stream; charset=utf-8',
-      Connection: 'keep-alive',
-      'X-Accel-Buffering': 'no',
-    },
-  })
+  )
 }
 
 export async function insightsHandler(
@@ -91,7 +79,7 @@ export async function insightsHandler(
         return streamInsights(generate, user.id)
       }
       return Response.json(
-        { analysis: await generate(user.id) },
+        { analysis: await generate(user.id, undefined, request.signal) },
         { status: 201, headers: { 'Cache-Control': 'no-store' } },
       )
     }
