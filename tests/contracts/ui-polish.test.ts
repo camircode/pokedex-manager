@@ -171,7 +171,13 @@ describe('Pokedex URL and responsive UI contracts', () => {
     expect(assistant).toContain('<Markdown')
     expect(assistant).toContain('skipHtml')
     expect(assistant).toContain('Fuente ')
-    expect(assistant).toContain('Actividad MCP')
+    expect(assistant).toContain(
+      "import { AiReasoning, type AiReasoningStep } from '@/components/ai-reasoning'",
+    )
+    expect(assistant).toContain('assistantReasoningSteps')
+    expect(assistant).toContain('className="assistant-reasoning"')
+    expect(assistant).toContain('activityStartedAt')
+    expect(assistant).not.toContain('Actividad MCP')
     expect(assistant).toContain('useLayoutEffect(() => {')
     expect(assistant).toContain("behavior: 'instant'")
     expect(assistant).toContain('threadEndRef.current?.scrollIntoView')
