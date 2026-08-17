@@ -5,7 +5,7 @@ import {
   validateScanImage,
 } from '@/lib/image-validation'
 import type { PokemonRecord } from '@/server/catalog'
-import type { KimiPort } from '@/server/integrations/kimi'
+import { KIMI_DEFAULT_PROMPT, type KimiPort } from '@/server/integrations/kimi'
 
 type CatalogReader = {
   getPokemon(identifier: string | number): Promise<PokemonRecord>
@@ -22,6 +22,12 @@ export type RecognitionCandidate = {
     value: string
     source: 'Kimi' | 'PokéAPI'
   }>
+}
+
+export type RecognitionInput = {
+  bytes: Uint8Array
+  mediaType: ScanImageMediaType
+  indication?: string
 }
 
 export type RecognitionActivityPhase =
@@ -49,10 +55,7 @@ export function createCardRecognitionService(options: {
 }) {
   return {
     async recognize(
-      input: {
-        bytes: Uint8Array
-        mediaType: ScanImageMediaType
-      },
+      input: RecognitionInput,
       report?: (event: RecognitionActivityEvent) => void | Promise<void>,
     ): Promise<RecognitionCandidate> {
       await report?.({ type: 'phase', phase: 'validating' })
@@ -61,9 +64,15 @@ export function createCardRecognitionService(options: {
         declaredMediaType: input.mediaType,
       })
       await report?.({ type: 'phase', phase: 'identifying' })
+      const indication = input.indication?.trim()
       const identified = await options.kimi.analyzeImage({
         image: validated.bytes,
         mediaType: validated.mediaType,
+        ...(indication
+          ? {
+              prompt: `${KIMI_DEFAULT_PROMPT}\nAdditional visual indication from the user: ${indication}`,
+            }
+          : {}),
       })
       await report?.({ type: 'phase', phase: 'verifying' })
       const [pokemonById, pokemonByName] = await Promise.all([

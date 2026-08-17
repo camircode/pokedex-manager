@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { AiProcess, type AiProcessStep } from '@/components/ai-process'
+import { AiMarkdown } from '@/components/ai-markdown'
 import { EmptyState, ErrorState, LoadingState } from '@/components/status'
 import { pokemonTypeLabel } from '@/lib/catalog-query'
 import { consumeEventStream } from '@/lib/event-stream'
@@ -14,8 +15,8 @@ export const Route = createFileRoute('/app/insights')({ component: Insights })
 const insightSteps: AiProcessStep[] = [
   { phase: 'collecting', label: 'Leer datos actuales de la colección' },
   { phase: 'preparing', label: 'Convertir métricas en hechos verificables' },
-  { phase: 'interpreting', label: 'Kimi interpreta los hechos permitidos' },
-  { phase: 'validating', label: 'Validar referencias y límites de salida' },
+  { phase: 'interpreting', label: 'Kimi escribe una lectura narrativa' },
+  { phase: 'validating', label: 'Validar texto y límites de salida' },
   { phase: 'persisting', label: 'Guardar el análisis para esta versión' },
 ]
 
@@ -105,7 +106,7 @@ function Insights() {
           </button>
           <small>
             {state.data?.capability.kimi
-              ? 'Cada interpretación conserva el hecho que la sustenta.'
+              ? 'La evidencia calculada se conserva separada de la narrativa.'
               : 'Configura Kimi para interpretar la evidencia.'}
           </small>
         </div>
@@ -172,20 +173,21 @@ function Insights() {
                     Generado con Kimi · {state.data.analysis.model}
                   </span>
                 </div>
-                <h2>{state.data.analysis.headline}</h2>
-                <p>{state.data.analysis.summary}</p>
+                <p className="report-label">Interpretación narrativa</p>
+                <h2>Lectura de tu colección</h2>
+                <AiMarkdown content={state.data.analysis.narrative} />
               </header>
-              <ol>
-                {state.data.analysis.findings.map((finding) => (
-                  <li key={finding.key}>
-                    <p className="report-label">{finding.label}</p>
-                    <h3>{finding.interpretation}</h3>
-                    <p>
-                      <strong>Evidencia:</strong> {finding.fact}
-                    </p>
-                  </li>
-                ))}
-              </ol>
+              <details className="insight-evidence-details">
+                <summary>Datos calculados entregados a Kimi</summary>
+                <dl>
+                  {state.data.analysis.evidence.map((fact) => (
+                    <div key={fact.key}>
+                      <dt>{fact.label}</dt>
+                      <dd>{fact.fact}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </details>
             </article>
           ) : (
             <EmptyState title="La evidencia está lista">

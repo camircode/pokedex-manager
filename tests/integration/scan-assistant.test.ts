@@ -7,7 +7,10 @@ import {
   createAssistantService,
 } from '../../src/server/assistant'
 import { UnauthorizedError } from '../../src/server/auth'
-import type { RecognitionCandidate } from '../../src/server/card-recognition'
+import {
+  createCardRecognitionService,
+  type RecognitionCandidate,
+} from '../../src/server/card-recognition'
 import type { PokemonRecord } from '../../src/server/catalog'
 import { createCollectionService } from '../../src/server/collection'
 import {
@@ -63,10 +66,11 @@ function candidate(): RecognitionCandidate {
   }
 }
 
-function imageRequest(stream = false) {
+function imageRequest(stream = false, indication?: string) {
   const form = new FormData()
   form.set('image', new File([png], 'card.png', { type: 'image/png' }))
   form.set('consent', 'true')
+  if (indication !== undefined) form.set('indication', indication)
   return new Request(`${baseUrl}/api/ai/recognize`, {
     method: 'POST',
     headers: stream ? { Accept: 'text/event-stream' } : undefined,
@@ -191,6 +195,49 @@ describe('protected recognition and confirmation boundary', () => {
         .collection('collection_entries')
         .countDocuments({ userId: 'scan-user', pokemonId: 25 }),
     ).toBe(1)
+  })
+
+  it('passes an optional correction indication to the next recognition attempt', async () => {
+    const recognize = vi.fn(async (input: { indication?: string }) => {
+      expect(input.indication).toBe('La carta muestra un Pokémon de tipo agua.')
+      return candidate()
+    })
+    const response = await recognizeHandler(
+      imageRequest(false, 'La carta muestra un Pokémon de tipo agua.'),
+      {
+        authenticate: async () => ({ id: 'scan-correction-user' }),
+        recognize,
+      },
+    )
+
+    expect(response.status).toBe(200)
+    expect(recognize).toHaveBeenCalledOnce()
+  })
+
+  it('adds the correction indication to Kimi without changing server verification', async () => {
+    const analyzeImage = vi.fn(async () => ({
+      pokemonId: 25,
+      name: 'pikachu',
+    }))
+    const service = createCardRecognitionService({
+      kimi: { analyzeImage },
+      catalog: { getPokemon: vi.fn(async () => pokemon()) },
+    })
+
+    await expect(
+      service.recognize({
+        bytes: png,
+        mediaType: 'image/png',
+        indication: 'La carta muestra un Pokémon de tipo agua.',
+      }),
+    ).resolves.toMatchObject({ pokemonId: 25, name: 'pikachu' })
+    expect(analyzeImage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        prompt: expect.stringContaining(
+          'La carta muestra un Pokémon de tipo agua.',
+        ),
+      }),
+    )
   })
 
   it('streams validation, Kimi identification, and PokéAPI verification', async () => {

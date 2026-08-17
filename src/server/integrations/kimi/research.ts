@@ -1,20 +1,21 @@
 import '@tanstack/react-start/server-only'
 
 import {
-  decodeKimiContent,
   executeKimiRequest,
+  parseKimiChatResponse,
   validateAdapterOptions,
 } from '@/server/integrations/kimi/client'
 import {
   KIMI_MODEL,
   KIMI_RESEARCH_MAX_COMPLETION_TOKENS,
-  KIMI_RESEARCH_RESPONSE_FORMAT,
+  KIMI_TEMPERATURE,
+  KIMI_THINKING,
   KimiAdapterError,
   type KimiAdapterOptions,
   loadKimiConfig,
+  kimiNarrativeSchema,
   type ResearchProposalPort,
   researchProposalInputSchema,
-  researchProposalSchema,
 } from '@/server/integrations/kimi/contracts'
 
 export function createKimiResearchAdapter(
@@ -34,24 +35,22 @@ export function createKimiResearchAdapter(
       if (new Set(candidateKeys).size !== candidateKeys.length) {
         throw new KimiAdapterError('KIMI_INPUT_INVALID')
       }
-
       const requestBody = {
         model: KIMI_MODEL,
         messages: [
           {
             role: 'user' as const,
             content: [
-              'Propón una expedición de colección en español neutral.',
-              'Crea solo un título de hasta 80 caracteres y una premisa de hasta 240 caracteres, y elige 2 o 3 objectiveKeys de la lista exacta.',
-              'No inventes criterios, progreso, enlaces ni datos personales.',
+              'Escribe una propuesta narrativa de investigación de colección en español neutral.',
+              'No devuelvas JSON ni una estructura de campos. Redacta una pieza breve, con libertad para desarrollar la idea y el siguiente paso de la colección.',
+              'Usa únicamente el estado y las posibilidades proporcionadas. No inventes criterios, progreso, enlaces ni datos personales. Los objetivos verificables se calculan y validan por separado en el servidor.',
               JSON.stringify(parsedInput.data),
             ].join('\n'),
           },
         ],
-        response_format: KIMI_RESEARCH_RESPONSE_FORMAT,
         stream: false as const,
-        thinking: { type: 'disabled' as const },
-        temperature: 0.6,
+        thinking: KIMI_THINKING,
+        temperature: KIMI_TEMPERATURE,
         max_completion_tokens: KIMI_RESEARCH_MAX_COMPLETION_TOKENS,
       }
 
@@ -60,17 +59,10 @@ export function createKimiResearchAdapter(
         requestBody,
         proposeOptions.signal,
         (payload) => {
-          const parsed = researchProposalSchema.safeParse(
-            decodeKimiContent(payload),
+          const parsed = kimiNarrativeSchema.safeParse(
+            parseKimiChatResponse(payload).content,
           )
           if (!parsed.success) {
-            throw new KimiAdapterError('KIMI_RESULT_INVALID')
-          }
-          const selected = parsed.data.objectiveKeys
-          if (
-            new Set(selected).size !== selected.length ||
-            selected.some((key) => !candidateKeys.includes(key))
-          ) {
             throw new KimiAdapterError('KIMI_RESULT_INVALID')
           }
           return parsed.data

@@ -2,6 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { AiProcess, type AiProcessStep } from '@/components/ai-process'
+import { AiMarkdown } from '@/components/ai-markdown'
 import { EmptyState, ErrorState, LoadingState } from '@/components/status'
 import { catalogSearchDefaults } from '@/lib/catalog-query'
 import { consumeEventStream } from '@/lib/event-stream'
@@ -13,10 +14,10 @@ export const Route = createFileRoute('/app/research')({ component: Research })
 
 const researchSteps: AiProcessStep[] = [
   { phase: 'collecting', label: 'Leer el estado actual de la colección' },
-  { phase: 'preparing', label: 'Preparar objetivos permitidos' },
-  { phase: 'generating', label: 'Kimi compone narrativa y selección' },
-  { phase: 'validating', label: 'Validar claves, límites y procedencia' },
-  { phase: 'persisting', label: 'Guardar la expedición verificada' },
+  { phase: 'preparing', label: 'Preparar el contexto verificable' },
+  { phase: 'generating', label: 'Kimi escribe la narrativa' },
+  { phase: 'validating', label: 'Validar el resultado y el progreso' },
+  { phase: 'persisting', label: 'Guardar la expedición' },
 ]
 
 function Research() {
@@ -90,9 +91,9 @@ function Research() {
           <p className="kicker">Expedición adaptativa</p>
           <h1>Investigación activa</h1>
           <p>
-            Kimi crea la narrativa y selecciona objetivos permitidos. El
-            servidor verifica los criterios y calcula el progreso con tu
-            colección.
+            Kimi escribe una narrativa abierta a partir de tu colección. El
+            servidor conserva los objetivos verificables y calcula el progreso
+            sin confundir la interpretación con los datos.
           </p>
         </div>
         <div className="research-generation-action">
@@ -116,7 +117,8 @@ function Research() {
           </button>
           {state.data?.capability.kimi ? (
             <small id="research-generation-help">
-              La propuesta se validará antes de guardarla.
+              La narrativa se validará antes de guardarla; el servidor conserva
+              el progreso.
             </small>
           ) : (
             <small id="research-generation-disabled">
@@ -156,38 +158,45 @@ function Research() {
                 </span>
               )}
             </div>
-            <h2>{expedition.title}</h2>
-            <p>{expedition.premise}</p>
+            <p className="report-label">Narrativa generada</p>
+            <h2>Investigación de colección</h2>
+            <AiMarkdown content={expedition.narrative} />
           </header>
-          <ol className="objective-list">
-            {expedition.objectives.map((objective) => (
-              <li
-                key={objective.key}
-                className={objective.complete ? 'complete' : ''}
-              >
-                <span className="objective-mark" aria-hidden="true">
-                  {objective.complete ? '✓' : '○'}
-                </span>
-                <div>
-                  <strong>{objective.label}</strong>
-                  <span>
-                    {Math.min(objective.progress, objective.target)} de{' '}
-                    {objective.target}
+          <section className="expedition-objectives">
+            <header>
+              <p className="report-label">Servidor</p>
+              <h3>Progreso verificable</h3>
+            </header>
+            <ol className="objective-list">
+              {expedition.objectives.map((objective) => (
+                <li
+                  key={objective.key}
+                  className={objective.complete ? 'complete' : ''}
+                >
+                  <span className="objective-mark" aria-hidden="true">
+                    {objective.complete ? '✓' : '○'}
                   </span>
-                  <progress
-                    value={Math.min(objective.progress, objective.target)}
-                    max={objective.target}
-                  >
-                    {objective.progress}/{objective.target}
-                  </progress>
-                </div>
-              </li>
-            ))}
-          </ol>
+                  <div>
+                    <strong>{objective.label}</strong>
+                    <span>
+                      {Math.min(objective.progress, objective.target)} de{' '}
+                      {objective.target}
+                    </span>
+                    <progress
+                      value={Math.min(objective.progress, objective.target)}
+                      max={objective.target}
+                    >
+                      {objective.progress}/{objective.target}
+                    </progress>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
           <footer>
             <p>
-              El servidor recalcula el progreso de forma determinista. Kimi no
-              puede modificar metas, avance ni estado.
+              Kimi escribe la narrativa; el servidor conserva los objetivos,
+              calcula el avance y mantiene el estado de la expedición.
             </p>
             <Link
               to="/app/pokedex"

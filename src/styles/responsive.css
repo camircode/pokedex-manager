@@ -385,7 +385,8 @@
     border-top: 0;
   }
   .insight-evidence,
-  .insight-analysis > ol > li {
+  .insight-analysis > ol > li,
+  .insight-evidence-details dl > div {
     grid-template-columns: 1fr;
     gap: 0.75rem;
   }

@@ -110,6 +110,16 @@ export async function recognizeHandler(
     if (!(image instanceof File)) {
       throw new ImageValidationError('Selecciona una imagen para analizar.')
     }
+    const indicationValue = form.get('indication')
+    if (indicationValue !== null && typeof indicationValue !== 'string') {
+      throw new ImageValidationError('La indicación enviada no es válida.')
+    }
+    const indication = indicationValue?.trim()
+    if (indication !== undefined && indication.length > 200) {
+      throw new ImageValidationError(
+        'La indicación no puede superar los 200 caracteres.',
+      )
+    }
     const validated = validateScanImage({
       bytes: new Uint8Array(await image.arrayBuffer()),
       declaredMediaType: image.type,
@@ -126,6 +136,7 @@ export async function recognizeHandler(
     const recognitionInput = {
       bytes: validated.bytes,
       mediaType: validated.mediaType,
+      ...(indication ? { indication } : {}),
     }
     if (request.headers.get('Accept')?.includes('text/event-stream')) {
       return streamRecognition(recognize, recognitionInput)

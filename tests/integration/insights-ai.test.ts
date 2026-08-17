@@ -47,23 +47,10 @@ function entry(overrides: Partial<CollectionEntry> = {}): CollectionEntry {
 
 function proposal(): InsightsProposalPort {
   return {
-    propose: vi.fn(async () => ({
-      headline: 'Una base eléctrica lista para diversificarse',
-      summary:
-        'La colección es compacta y sus hechos verificables muestran una concentración clara que puede ampliarse.',
-      findings: [
-        {
-          factKey: 'collection-size',
-          interpretation:
-            'El tamaño actual facilita incorporar nuevas especies sin perder claridad sobre cada registro.',
-        },
-        {
-          factKey: 'type-distribution',
-          interpretation:
-            'La distribución actual señala una especialización eléctrica y espacio para sumar otros tipos.',
-        },
-      ],
-    })),
+    propose: vi.fn(
+      async () =>
+        'La colección es compacta y su concentración eléctrica puede convertirse en una oportunidad para sumar diversidad sin perder claridad sobre cada registro.',
+    ),
   }
 }
 
@@ -85,7 +72,7 @@ afterAll(async () => {
 })
 
 describe('grounded AI insights', () => {
-  it('persists only interpretations linked to deterministic facts', async () => {
+  it('persists freeform interpretation alongside deterministic evidence', async () => {
     const entries = [entry()]
     const generatedBy = proposal()
     const service = createInsightsService(database, {
@@ -96,21 +83,24 @@ describe('grounded AI insights', () => {
     const generated = await service.generate('insights-user', generatedBy)
 
     expect(generated.model).toBe('kimi-k2.6')
-    expect(generated.findings).toEqual([
-      expect.objectContaining({
-        key: 'collection-size',
-        fact: '1 especie y 2 ejemplares.',
-      }),
-      expect.objectContaining({
-        key: 'type-distribution',
-        fact: expect.stringContaining('electric (2)'),
-      }),
-    ])
+    expect(generated.narrative).toContain('La colección es compacta')
+    expect(generated.evidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: 'collection-size',
+          fact: '1 especie y 2 ejemplares.',
+        }),
+        expect.objectContaining({
+          key: 'type-distribution',
+          fact: expect.stringContaining('electric (2)'),
+        }),
+      ]),
+    )
     expect(
       JSON.stringify(vi.mocked(generatedBy.propose).mock.calls),
     ).not.toContain('private raw note')
     await expect(service.current('insights-user')).resolves.toMatchObject({
-      analysis: expect.objectContaining({ headline: generated.headline }),
+      analysis: expect.objectContaining({ narrative: generated.narrative }),
     })
   })
 
@@ -151,10 +141,9 @@ describe('grounded AI insights', () => {
             userId: 'insights-stream-user',
             type: 'collection-overview',
             collectionVersion: 'version',
-            headline: 'Hallazgo verificado',
-            summary:
-              'Resumen suficientemente largo para el contrato de prueba.',
-            findings: [],
+            narrative:
+              'Una lectura narrativa de la colección con suficiente contenido.',
+            evidence: [],
             model: 'kimi-k2.6',
             createdAt: new Date('2026-08-14T12:00:00Z'),
           }

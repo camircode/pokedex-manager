@@ -14,6 +14,8 @@ import {
   KIMI_MAX_COMPLETION_TOKENS,
   KIMI_MODEL,
   KIMI_RESPONSE_FORMAT,
+  KIMI_TEMPERATURE,
+  KIMI_THINKING,
   KimiAdapterError,
   type KimiAdapterOptions,
   type KimiPort,
@@ -61,8 +63,8 @@ export function createKimiAdapter(options: KimiAdapterOptions): KimiPort {
         ],
         response_format: KIMI_RESPONSE_FORMAT,
         stream: false as const,
-        thinking: { type: 'disabled' as const },
-        temperature: 0.6,
+        thinking: KIMI_THINKING,
+        temperature: KIMI_TEMPERATURE,
         max_completion_tokens: KIMI_MAX_COMPLETION_TOKENS,
       }
 

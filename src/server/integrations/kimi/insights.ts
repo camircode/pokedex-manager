@@ -1,19 +1,20 @@
 import '@tanstack/react-start/server-only'
 
 import {
-  decodeKimiContent,
   executeKimiRequest,
+  parseKimiChatResponse,
   validateAdapterOptions,
 } from '@/server/integrations/kimi/client'
 import {
   type InsightsProposalPort,
   insightsProposalInputSchema,
-  insightsProposalSchema,
   KIMI_INSIGHTS_MAX_COMPLETION_TOKENS,
-  KIMI_INSIGHTS_RESPONSE_FORMAT,
   KIMI_MODEL,
+  KIMI_TEMPERATURE,
+  KIMI_THINKING,
   KimiAdapterError,
   type KimiAdapterOptions,
+  kimiNarrativeSchema,
   loadKimiConfig,
 } from '@/server/integrations/kimi/contracts'
 
@@ -32,7 +33,6 @@ export function createKimiInsightsAdapter(
       if (new Set(factKeys).size !== factKeys.length) {
         throw new KimiAdapterError('KIMI_INPUT_INVALID')
       }
-
       return executeKimiRequest(
         validated,
         {
@@ -41,34 +41,24 @@ export function createKimiInsightsAdapter(
             {
               role: 'user' as const,
               content: [
-                'Interpreta esta colección Pokémon en español neutral.',
-                'Usa únicamente los hechos proporcionados. No inventes métricas, Pokémon, preferencias ni causalidad.',
-                'Selecciona entre 2 y 4 factKey distintos y explica qué significa cada hecho para la colección.',
+                'Escribe un análisis narrativo de esta colección Pokémon en español neutral.',
+                'No devuelvas JSON ni una estructura de campos. Explica con libertad qué patrones, tensiones o posibilidades ves en los hechos.',
+                'Usa únicamente los hechos proporcionados. No inventes métricas, Pokémon, preferencias ni causalidad. Los hechos se mostrarán por separado como evidencia calculada.',
                 JSON.stringify(parsedInput.data),
               ].join('\n'),
             },
           ],
-          response_format: KIMI_INSIGHTS_RESPONSE_FORMAT,
           stream: false as const,
-          thinking: { type: 'disabled' as const },
-          temperature: 0.6,
+          thinking: KIMI_THINKING,
+          temperature: KIMI_TEMPERATURE,
           max_completion_tokens: KIMI_INSIGHTS_MAX_COMPLETION_TOKENS,
         },
         proposeOptions.signal,
         (payload) => {
-          const parsed = insightsProposalSchema.safeParse(
-            decodeKimiContent(payload),
+          const parsed = kimiNarrativeSchema.safeParse(
+            parseKimiChatResponse(payload).content,
           )
           if (!parsed.success) {
-            throw new KimiAdapterError('KIMI_RESULT_INVALID')
-          }
-          const selected = parsed.data.findings.map(
-            (finding) => finding.factKey,
-          )
-          if (
-            new Set(selected).size !== selected.length ||
-            selected.some((key) => !factKeys.includes(key))
-          ) {
             throw new KimiAdapterError('KIMI_RESULT_INVALID')
           }
           return parsed.data
