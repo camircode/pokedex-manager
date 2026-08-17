@@ -3,6 +3,11 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
+import {
+  AiReasoning,
+  type AiReasoningItem,
+  reasoningItems,
+} from '@/components/ai-reasoning'
 import { EmptyState, ErrorState, LoadingState } from '@/components/status'
 import { consumeEventStream } from '@/lib/event-stream'
 import { useApi } from '@/lib/ui'
@@ -162,68 +167,65 @@ function MessageEntry({ message }: { message: AssistantMessage }) {
   )
 }
 
-function AssistantActivity({
-  events,
-  elapsedSeconds,
-}: {
-  events: AssistantActivityEvent[]
-  elapsedSeconds: number
-}) {
-  const phase = [...events].reverse().find((event) => event.type === 'status')
-  const label =
-    phase?.type === 'status' && phase.phase === 'writing'
-      ? 'Redactando respuesta'
-      : 'Analizando la consulta'
-  const operations = events.filter(
-    (event): event is Extract<AssistantActivityEvent, { type: 'tool_call' }> =>
-      event.type === 'tool_call',
-  )
-  const results = events.filter(
-    (
-      event,
-    ): event is Extract<AssistantActivityEvent, { type: 'tool_result' }> =>
-      event.type === 'tool_result',
-  )
+function assistantReasoningItems(
+  events: AssistantActivityEvent[],
+): AiReasoningItem[] {
+  const items: AiReasoningItem[] = []
+  let reasoning = ''
+  let reasoningSection = 0
+
+  const flushReasoning = () => {
+    if (reasoning.length === 0) return
+    items.push(
+      ...reasoningItems(reasoning).map((item) => ({
+        ...item,
+        id: `assistant-${reasoningSection}-${item.id}`,
+      })),
+    )
+    reasoning = ''
+    reasoningSection += 1
+  }
+
+  events.forEach((event, index) => {
+    if (event.type === 'reasoning') {
+      reasoning += event.delta
+      return
+    }
+    if (event.type === 'status') return
+
+    flushReasoning()
+    if (event.type === 'tool_call') {
+      items.push({
+        id: `tool-call-${index}`,
+        kind: 'tool',
+        content: <strong>{operationDetail(event.operation)}</strong>,
+        detail: `${event.operation.name} · Consultando…`,
+      })
+      return
+    }
+    items.push({
+      id: `tool-result-${index}`,
+      kind: 'tool',
+      content: <strong>{operationDetail(event.operation)}</strong>,
+      detail: `${event.citations.length} fuente${event.citations.length === 1 ? '' : 's'} verificada${event.citations.length === 1 ? '' : 's'}`,
+    })
+  })
+  flushReasoning()
+  return items
+}
+
+function AssistantActivity({ events }: { events: AssistantActivityEvent[] }) {
+  const items = assistantReasoningItems(events)
 
   return (
     <li className="message assistant pending">
       <span className="message-role">Asistente</span>
-      <div className="thinking-status" role="status">
-        <span className="thinking-dots" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </span>
-        <strong>{label}</strong>
-        <span>{elapsedSeconds} s</span>
-      </div>
-      {(operations.length > 0 || results.length > 0) && (
-        <details className="assistant-activity" open>
-          <summary>Actividad MCP</summary>
-          <ol>
-            {operations.map((event, index) => {
-              const result = results[index]
-              return (
-                <li key={JSON.stringify(event.operation)}>
-                  <i
-                    className={`hn ${result ? 'hn-check' : 'hn-cog'}`}
-                    aria-hidden="true"
-                  />
-                  <div>
-                    <strong>{operationDetail(event.operation)}</strong>
-                    <code>{event.operation.name}</code>
-                    <span>
-                      {result
-                        ? `${result.citations.length} fuente${result.citations.length === 1 ? '' : 's'} verificada${result.citations.length === 1 ? '' : 's'}`
-                        : 'Consultando…'}
-                    </span>
-                  </div>
-                </li>
-              )
-            })}
-          </ol>
-        </details>
-      )}
+      <AiReasoning
+        className="assistant-reasoning"
+        title="Razonamiento y herramientas"
+        items={items}
+        streaming
+      />
     </li>
   )
 }
@@ -250,7 +252,6 @@ function Assistant() {
   const [activity, setActivity] = useState<AssistantActivityEvent[]>([])
   const [pendingUserMessage, setPendingUserMessage] = useState('')
   const [completedMessage, setCompletedMessage] = useState<AssistantMessage>()
-  const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [followResponse, setFollowResponse] = useState(false)
   const threadEndRef = useRef<HTMLDivElement>(null)
   const query = conversationId
@@ -262,15 +263,6 @@ function Assistant() {
     history.data?.messages?.some(
       (entry) => entry.id === completedMessage.id,
     ) === true
-
-  useEffect(() => {
-    if (!sending) return
-    const startedAt = Date.now()
-    const timer = window.setInterval(() => {
-      setElapsedSeconds(Math.floor((Date.now() - startedAt) / 1_000))
-    }, 1_000)
-    return () => window.clearInterval(timer)
-  }, [sending])
 
   useLayoutEffect(() => {
     if (!followResponse) return
@@ -298,7 +290,6 @@ function Assistant() {
     setError('')
     setActivity([])
     setCompletedMessage(undefined)
-    setElapsedSeconds(0)
     setPendingUserMessage(content)
     setMessage('')
     setFollowResponse(true)
@@ -447,12 +438,7 @@ function Assistant() {
                 <p>{pendingUserMessage}</p>
               </li>
             )}
-            {sending && (
-              <AssistantActivity
-                events={activity}
-                elapsedSeconds={elapsedSeconds}
-              />
-            )}
+            {sending && <AssistantActivity events={activity} />}
             {completedMessage && !completedPersisted && (
               <MessageEntry message={completedMessage} />
             )}

@@ -4,14 +4,7 @@ import { z } from 'zod'
 
 export const KIMI_MODEL = 'kimi-k2.6' as const
 export const KIMI_API_BASE_URL = 'https://api.moonshot.ai/v1'
-export const KIMI_DEFAULT_TIMEOUT_MS = 10_000
-export const KIMI_VISION_DEFAULT_TIMEOUT_MS = 30_000
-export const KIMI_TEMPERATURE = 1
 export const KIMI_THINKING = { type: 'enabled' } as const
-export const KIMI_MAX_COMPLETION_TOKENS = 1_024
-export const KIMI_RESEARCH_MAX_COMPLETION_TOKENS = 2_048
-export const KIMI_INSIGHTS_MAX_COMPLETION_TOKENS = 2_048
-export const KIMI_ASSISTANT_MAX_COMPLETION_TOKENS = 4_096
 export const KIMI_DEFAULT_PROMPT =
   'Identify the Pokémon in this image. Return only the requested JSON.'
 
@@ -39,14 +32,6 @@ export const KIMI_RESPONSE_FORMAT = {
 } as const
 
 const nonEmptyString = z.string().trim().min(1)
-const timeoutSchema = (defaultTimeoutMs: number) =>
-  z
-    .string()
-    .trim()
-    .regex(/^\d+$/)
-    .default(String(defaultTimeoutMs))
-    .transform(Number)
-    .refine((value) => value >= 100 && value <= 120_000)
 
 const kimiEnvironmentSchema = z.object({
   KIMI_LIVE_ENABLED: z
@@ -57,8 +42,6 @@ const kimiEnvironmentSchema = z.object({
     (value) => (value === '' ? undefined : value),
     nonEmptyString.optional(),
   ),
-  KIMI_TIMEOUT_MS: timeoutSchema(KIMI_DEFAULT_TIMEOUT_MS),
-  KIMI_VISION_TIMEOUT_MS: timeoutSchema(KIMI_VISION_DEFAULT_TIMEOUT_MS),
 })
 
 export const imageMediaTypeSchema = z.enum([
@@ -75,45 +58,6 @@ export const imageInputSchema = z
     prompt: nonEmptyString.max(400).optional(),
   })
   .strict()
-
-export const kimiResponseSchema = z.object({
-  choices: z
-    .array(
-      z.object({
-        finish_reason: z.string(),
-        message: z.object({ content: z.unknown().optional() }),
-      }),
-    )
-    .min(1),
-})
-
-const kimiToolCallSchema = z
-  .object({
-    index: z.number().int().nonnegative().optional(),
-    id: z.string().trim().min(1).max(128),
-    type: z.literal('function'),
-    function: z
-      .object({
-        name: z.string().trim().min(1).max(64),
-        arguments: z.string().max(2_000),
-      })
-      .strict(),
-  })
-  .strict()
-
-export const kimiChatResponseSchema = z.object({
-  choices: z
-    .array(
-      z.object({
-        finish_reason: z.string(),
-        message: z.object({
-          content: z.unknown().optional(),
-          tool_calls: z.array(kimiToolCallSchema).max(10).optional(),
-        }),
-      }),
-    )
-    .min(1),
-})
 
 const kimiStreamToolCallSchema = z.object({
   index: z.number().int().nonnegative(),
@@ -198,7 +142,6 @@ type FetchImplementation = (
 export type KimiAdapterOptions = {
   apiKey: string
   baseUrl?: string
-  timeoutMs?: number
   fetch?: FetchImplementation
 }
 
@@ -320,8 +263,6 @@ export interface KimiPort {
 export type KimiConfig = {
   enabled: boolean
   apiKey?: string
-  timeoutMs: number
-  visionTimeoutMs: number
 }
 
 export type KimiErrorCode =
@@ -337,7 +278,6 @@ export type KimiErrorCode =
   | 'KIMI_RESPONSE_INVALID'
   | 'KIMI_RESPONSE_TRUNCATED'
   | 'KIMI_RESULT_INVALID'
-  | 'KIMI_TIMEOUT'
 
 const errorMessages: Record<KimiErrorCode, string> = {
   KIMI_ABORTED: 'Kimi request was aborted',
@@ -352,7 +292,6 @@ const errorMessages: Record<KimiErrorCode, string> = {
   KIMI_RESPONSE_INVALID: 'Invalid Kimi provider response',
   KIMI_RESPONSE_TRUNCATED: 'Kimi response was truncated',
   KIMI_RESULT_INVALID: 'Kimi result failed domain validation',
-  KIMI_TIMEOUT: 'Kimi request timed out',
 }
 
 export class KimiAdapterError extends Error {
@@ -383,7 +322,5 @@ export function loadKimiConfig(
   return {
     enabled: parsed.data.KIMI_LIVE_ENABLED,
     apiKey: parsed.data.MOONSHOT_API_KEY,
-    timeoutMs: parsed.data.KIMI_TIMEOUT_MS,
-    visionTimeoutMs: parsed.data.KIMI_VISION_TIMEOUT_MS,
   }
 }

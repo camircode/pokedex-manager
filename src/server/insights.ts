@@ -15,6 +15,7 @@ import { getMongoClient } from '@/server/db/mongo-client'
 import {
   createConfiguredKimiInsightsAdapter,
   type InsightsProposalPort,
+  type KimiReasoningEvent,
   KIMI_MODEL,
   loadKimiConfig,
 } from '@/server/integrations/kimi'
@@ -54,17 +55,7 @@ export type InsightsResponse = {
   capability: InsightsCapability
 }
 
-export type InsightsActivityPhase =
-  | 'collecting'
-  | 'preparing'
-  | 'interpreting'
-  | 'validating'
-  | 'persisting'
-
-export type InsightsActivityEvent = {
-  type: 'phase'
-  phase: InsightsActivityPhase
-}
+export type InsightsActivityEvent = KimiReasoningEvent
 
 type CollectionPort = {
   list(userId: string): Promise<CollectionEntry[]>
@@ -218,15 +209,18 @@ export function createInsightsService(
     userId: string,
     proposal: InsightsProposalPort,
     report?: (event: InsightsActivityEvent) => void | Promise<void>,
+    signal?: AbortSignal,
   ) {
-    await report?.({ type: 'phase', phase: 'collecting' })
     const state = await snapshot(userId)
     if (state.entries.length === 0) throw new InsightsEmptyCollectionError()
 
-    await report?.({ type: 'phase', phase: 'preparing' })
-    await report?.({ type: 'phase', phase: 'interpreting' })
-    const narrative = await proposal.propose({ facts: state.facts })
-    await report?.({ type: 'phase', phase: 'validating' })
+    const narrative = await proposal.propose(
+      { facts: state.facts },
+      {
+        signal,
+        onReasoning: (delta) => report?.({ type: 'reasoning', delta }),
+      },
+    )
     const insight: AiInsight = {
       userId,
       type: 'collection-overview',
@@ -237,7 +231,6 @@ export function createInsightsService(
       createdAt: now(),
     }
 
-    await report?.({ type: 'phase', phase: 'persisting' })
     await insights.replaceOne(
       {
         userId,
@@ -260,6 +253,7 @@ export async function getInsightsResponse(userId: string) {
 export async function generateInsightsWithKimi(
   userId: string,
   report?: (event: InsightsActivityEvent) => void | Promise<void>,
+  signal?: AbortSignal,
 ) {
   const [database, collection] = await Promise.all([
     getMongoClient().connect(),
@@ -269,5 +263,6 @@ export async function generateInsightsWithKimi(
     userId,
     createConfiguredKimiInsightsAdapter(),
     report,
+    signal,
   )
 }

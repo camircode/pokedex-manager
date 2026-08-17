@@ -12,184 +12,158 @@
 .insight-report h2 {
   margin: 0;
 }
-.ai-reasoning-panel {
+.ai-reasoning {
   margin-bottom: 2rem;
+  padding: 1rem 0;
   border-top: 2px solid var(--ink);
   border-bottom: 1px solid var(--line);
 }
-.ai-reasoning-toggle {
+.prompt-steps-trigger {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   width: 100%;
-  gap: 0.9rem;
-  padding: 1rem 0;
+  gap: 1rem;
+  padding: 0;
   border: 0;
   border-radius: 0;
-  color: var(--ink);
+  color: var(--muted);
   background: transparent;
+  font: inherit;
   text-align: left;
   cursor: pointer;
+  transition: color 160ms ease-out;
 }
-.ai-reasoning-toggle:focus-visible {
+.prompt-steps-trigger:hover {
+  color: var(--ink);
+}
+.prompt-steps-trigger:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 4px;
 }
-.ai-reasoning-summary-mark {
-  display: grid;
-  flex: 0 0 auto;
-  place-items: center;
-  width: 1.25rem;
-  height: 1.25rem;
-  border: 1px solid var(--line-strong);
-  border-radius: 50%;
-  color: var(--muted);
-  background: var(--surface);
-  font-size: 0.78rem;
-  font-weight: 800;
-}
-.ai-reasoning-summary-copy {
-  display: grid;
+.prompt-steps-trigger-copy {
+  display: flex;
   min-width: 0;
-  flex: 1;
-  gap: 0.2rem;
+  align-items: center;
+  gap: 0.7rem;
 }
-.ai-reasoning-summary-copy .report-label {
-  margin: 0;
+.prompt-steps-trigger-copy > span:last-child {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 0.7rem;
 }
-.ai-reasoning-summary-title {
+.prompt-steps-left-icon {
+  position: relative;
+  display: inline-grid;
+  flex: 0 0 auto;
+  width: 1.15rem;
+  height: 1.15rem;
+  place-items: center;
+}
+.prompt-steps-primary-icon,
+.prompt-steps-hover-icon,
+.prompt-steps-chevron {
+  width: 1rem;
+  height: 1rem;
+  transition:
+    opacity 160ms ease-out,
+    transform 160ms ease-out;
+}
+.prompt-steps-hover-icon {
+  position: absolute;
+  opacity: 0;
+}
+.prompt-steps-trigger:hover .prompt-steps-primary-icon.swappable {
+  opacity: 0;
+}
+.prompt-steps-trigger:hover .prompt-steps-hover-icon {
+  opacity: 1;
+}
+.prompt-steps-trigger[data-state="open"] .prompt-steps-hover-icon,
+.prompt-steps-trigger[data-state="open"] .prompt-steps-chevron {
+  transform: rotate(180deg);
+}
+.ai-reasoning-title {
   overflow: hidden;
-  font-family: var(--font-body);
-  font-size: 1rem;
-  line-height: 1.35;
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.ai-reasoning-toggle:hover .ai-reasoning-summary-title {
-  color: var(--accent-dark);
-}
 .ai-reasoning-state {
-  flex: 0 0 auto;
-  padding: 0.3rem 0.55rem;
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 800;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
 }
-.ai-reasoning-state.running {
-  color: var(--accent-dark);
-  border-color: #c47b82;
+.prompt-steps-content {
+  overflow: hidden;
 }
-.ai-reasoning-state.complete {
-  color: var(--success);
-  border-color: #76a98a;
+.prompt-steps-grid {
+  display: grid;
+  grid-template-columns: min-content minmax(0, 1fr);
+  gap: 0.9rem;
+  align-items: stretch;
+  margin-top: 1rem;
 }
-.ai-reasoning-state.error {
-  color: var(--accent-dark);
-  border-color: var(--accent);
+.prompt-steps-bar-slot {
+  display: flex;
+  min-width: 1.15rem;
+  justify-content: center;
 }
-.ai-reasoning-chevron {
-  display: block;
-  flex: 0 0 auto;
-  width: 0.55rem;
-  height: 0.55rem;
-  margin: 0 0.25rem 0.25rem 0.15rem;
-  border-right: 1.5px solid currentColor;
-  border-bottom: 1.5px solid currentColor;
-  transform: rotate(45deg);
-  transition: transform 160ms ease-out;
-}
-.ai-reasoning-chevron.expanded {
-  margin-bottom: -0.25rem;
-  transform: rotate(225deg);
-}
-.ai-reasoning-body {
-  padding: 0 0 1rem 0.1rem;
-}
-.ai-reasoning-steps {
-  position: relative;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.ai-reasoning-steps::before {
-  position: absolute;
-  top: 0.8rem;
-  bottom: 0.8rem;
-  left: 0.58rem;
-  width: 1px;
+.prompt-steps-bar {
+  width: 2px;
+  height: 100%;
   background: var(--line);
-  content: "";
 }
-.ai-reasoning-steps li {
-  position: relative;
+.prompt-steps-items {
   display: grid;
-  grid-template-columns: 1.2rem minmax(0, 1fr);
-  gap: 0.75rem;
-  align-items: start;
-  padding: 0.55rem 0;
+  min-width: 0;
+  gap: 0.9rem;
 }
-.ai-reasoning-steps li > div {
-  display: grid;
-  gap: 0.18rem;
-  padding-top: 0.04rem;
-}
-.ai-reasoning-steps li strong {
+.prompt-steps-item {
+  min-width: 0;
+  color: var(--muted);
   font-size: 0.82rem;
-  line-height: 1.35;
+  line-height: 1.55;
 }
-.ai-reasoning-steps li small {
-  color: var(--muted);
-  font-size: 0.72rem;
-}
-.ai-reasoning-marker {
-  z-index: 1;
+.ai-reasoning-item {
   display: grid;
+  grid-template-columns: 1.1rem minmax(0, 1fr);
+  gap: 0.65rem;
+}
+.ai-reasoning-item-icon {
+  display: grid;
+  width: 1.1rem;
+  height: 1.1rem;
   place-items: center;
-  width: 1.2rem;
-  height: 1.2rem;
-  border: 1px solid var(--line-strong);
-  border-radius: 50%;
-  color: var(--muted);
-  background: var(--paper);
-  font-size: 0.7rem;
-  font-weight: 800;
-}
-.ai-reasoning-steps .complete .ai-reasoning-marker {
   color: var(--success);
-  border-color: #76a98a;
+  background: var(--paper);
 }
-.ai-reasoning-steps .error .ai-reasoning-marker {
+.ai-reasoning-item-icon svg,
+.ai-reasoning-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+.ai-reasoning-item.tool .ai-reasoning-item-icon {
   color: var(--accent-dark);
-  border-color: var(--accent);
-  background: #f2dcdd;
 }
-.ai-reasoning-steps .active .ai-reasoning-marker {
+.ai-reasoning-item.waiting .ai-reasoning-item-icon {
   color: var(--accent);
-  border-color: var(--accent);
-  background: #f2dcdd;
-  animation: ai-reasoning-pulse 900ms ease-in-out infinite alternate;
 }
-@keyframes ai-reasoning-pulse {
+.ai-reasoning-item-detail {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--muted);
+}
+.spinning {
+  animation: prompt-steps-spin 900ms linear infinite;
+}
+@keyframes prompt-steps-spin {
   to {
-    opacity: 0.55;
-    transform: scale(0.84);
+    transform: rotate(360deg);
   }
-}
-.ai-reasoning-steps .active .thinking-dots {
-  animation: none;
-}
-.ai-reasoning-steps .active .thinking-dots span {
-  width: 0.24rem;
-  height: 0.24rem;
-}
-.ai-reasoning-steps .active .thinking-dots span:nth-child(2) {
-  animation-delay: 120ms;
-}
-.ai-reasoning-steps .active .thinking-dots span:nth-child(3) {
-  animation-delay: 240ms;
-}
-.ai-reasoning-panel [hidden] {
-  display: none;
 }
 .insight-evidence {
   display: grid;
@@ -295,6 +269,11 @@
 .ai-markdown a {
   overflow-wrap: anywhere;
 }
+.ai-reasoning-item .ai-markdown,
+.ai-reasoning-item .ai-markdown > :first-child,
+.ai-reasoning-item .ai-markdown > :last-child {
+  margin-block: 0;
+}
 .insight-evidence-details {
   padding: 0 clamp(1.5rem, 4vw, 2.5rem);
 }
@@ -362,7 +341,6 @@
   gap: 0.5rem;
   text-align: right;
 }
-/* biome-ignore lint/style/noDescendingSpecificity: This selector belongs to a separate component. */
 .research-generation-action small {
   color: var(--muted);
 }
@@ -396,6 +374,7 @@
   padding: 0;
   list-style: none;
 }
+/* biome-ignore lint/style/noDescendingSpecificity: This selector belongs to a separate component. */
 .objective-list li {
   display: grid;
   grid-template-columns: 2rem 1fr;
