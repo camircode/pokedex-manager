@@ -17,6 +17,10 @@ describe('compose runtime contract', () => {
     expect(compose).toContain("'127.0.0.1:3000:3000'")
     expect(compose).toContain("fetch('http://127.0.0.1:3000/api/health')")
     expect(compose).toContain('pokedex-mongo-data:/data/db')
+    expect(compose).toContain(`KIMI_TIMEOUT_MS: \${KIMI_TIMEOUT_MS:-60000}`)
+    expect(compose).toContain(
+      `KIMI_VISION_TIMEOUT_MS: \${KIMI_VISION_TIMEOUT_MS:-30000}`,
+    )
     expect(dockerfile).toMatch(
       /FROM node:22-bookworm-slim@sha256:[a-f0-9]{64} AS dependencies/,
     )
@@ -38,6 +42,10 @@ describe('compose runtime contract', () => {
     expect(compose).toContain(`image: \${APP_IMAGE:-pokedex-manager:local}`)
     expect(compose).toContain('MONGO_MODE: atlas')
     expect(compose).toContain("MONGO_ATLAS_OPT_IN: 'true'")
+    expect(compose).toContain(`KIMI_TIMEOUT_MS: \${KIMI_TIMEOUT_MS:-60000}`)
+    expect(compose).toContain(
+      `KIMI_VISION_TIMEOUT_MS: \${KIMI_VISION_TIMEOUT_MS:-30000}`,
+    )
     expect(compose).toMatch(/BETTER_AUTH_SECRET: \$\{BETTER_AUTH_SECRET:\?/)
     expect(compose).toMatch(/BETTER_AUTH_URL: \$\{BETTER_AUTH_URL:\?/)
   })
@@ -49,6 +57,10 @@ describe('compose runtime contract', () => {
     expect(compose).toContain('BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?')
     expect(compose).toContain("MCP_BEARER_TOKEN: ''")
     expect(compose).toContain('pokedex-mongo-data:/data/db')
+    expect(compose).toContain(`KIMI_TIMEOUT_MS: \${KIMI_TIMEOUT_MS:-60000}`)
+    expect(compose).toContain(
+      `KIMI_VISION_TIMEOUT_MS: \${KIMI_VISION_TIMEOUT_MS:-30000}`,
+    )
     expect(compose).toContain("- '3000'")
     expect(compose).not.toMatch(/^\s+ports:/m)
   })

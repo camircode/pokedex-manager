@@ -747,7 +747,7 @@ describe('Kimi direct adapter contract', () => {
   it('requires an explicit live flag and API key, while keeping live opt-in', () => {
     expect(loadKimiConfig({})).toMatchObject({
       enabled: false,
-      timeoutMs: 10_000,
+      timeoutMs: 60_000,
       visionTimeoutMs: 30_000,
     })
     expect(() => loadKimiConfig({ KIMI_LIVE_ENABLED: 'true' })).toThrowError(
