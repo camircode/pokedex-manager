@@ -6,8 +6,9 @@ import {
   type KimiAdapterOptions,
   type KimiChatCompletion,
   type KimiPokemonResult,
-  kimiPokemonResultSchema,
   type KimiStreamCompletion,
+  type KimiToolCall,
+  kimiPokemonResultSchema,
 } from '@/server/integrations/kimi/contracts'
 import { consumeKimiStream } from '@/server/integrations/kimi/stream'
 
@@ -88,6 +89,23 @@ export function parseKimiStreamChatResponse(
     reasoningContent: completion.reasoningContent,
     toolCalls: [],
   }
+}
+
+export function parseKimiStreamToolResponse(
+  completion: KimiStreamCompletion,
+): KimiToolCall {
+  validateStreamFinishReason(completion)
+  if (
+    completion.finishReason !== 'tool_calls' ||
+    completion.toolCalls.length !== 1
+  ) {
+    throw new KimiAdapterError('KIMI_RESULT_INVALID')
+  }
+  const toolCall = completion.toolCalls[0]
+  if (toolCall === undefined) {
+    throw new KimiAdapterError('KIMI_RESULT_INVALID')
+  }
+  return toolCall
 }
 
 export async function executeKimiStreamRequest<T>(

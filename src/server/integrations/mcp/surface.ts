@@ -72,7 +72,8 @@ function registerReadonlySurface(
     'get_pokemon',
     {
       title: 'Get Pokémon',
-      description: 'Read-only Pokémon details.',
+      description:
+        'Resolve a Pokémon by National Pokédex integer or canonical base-species name and return verified PokéAPI-backed details.',
       inputSchema: { pokemonId: pokemonIdentifierSchema },
       annotations: { readOnlyHint: true, destructiveHint: false },
     },

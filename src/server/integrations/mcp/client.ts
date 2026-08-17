@@ -59,7 +59,7 @@ export async function createMcpToolClient(
 ) {
   const server = createSessionServer(port, principal)
   const client = new Client(
-    { name: 'pokedex-manager-assistant', version: '0.1.0' },
+    { name: 'pokedex-manager-server', version: '0.1.0' },
     { capabilities: {} },
   )
   const [clientTransport, serverTransport] =

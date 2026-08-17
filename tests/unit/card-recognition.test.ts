@@ -29,15 +29,31 @@ function pokemon(overrides: Partial<PokemonRecord> = {}): PokemonRecord {
 }
 
 describe('card recognition boundary', () => {
-  it('validates the provider result against both catalog identifiers', async () => {
-    const analyzeImage = vi.fn(async () => ({
-      pokemonId: 25,
-      name: 'pikachu',
+  it('uses the MCP tool result as the authoritative candidate', async () => {
+    const analyzeImageWithTool = vi.fn(async () => ({
+      id: 'call-1',
+      name: 'get_pokemon',
+      arguments: JSON.stringify({ pokemonId: 25 }),
     }))
-    const getPokemon = vi.fn(async () => pokemon())
+    const callTool = vi.fn(async () => ({
+      operation: 'get_pokemon' as const,
+      subject: 'scan-user',
+      data: pokemon(),
+    }))
+    const close = vi.fn(async () => undefined)
     const service = createCardRecognitionService({
-      kimi: { analyzeImage },
-      catalog: { getPokemon },
+      kimi: { analyzeImageWithTool },
+      createMcpClient: async () => ({
+        listTools: async () => [
+          {
+            name: 'get_pokemon',
+            description: 'Verified Pokémon details.',
+            inputSchema: { type: 'object' },
+          },
+        ],
+        callTool,
+        close,
+      }),
     })
 
     await expect(
@@ -47,33 +63,47 @@ describe('card recognition boundary', () => {
       name: 'pikachu',
       evidence: [{ source: 'Kimi' }, { source: 'PokéAPI' }],
     })
-    expect(getPokemon).toHaveBeenNthCalledWith(1, 25)
-    expect(getPokemon).toHaveBeenNthCalledWith(2, 'pikachu')
+    expect(analyzeImageWithTool).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({
+        function: expect.objectContaining({ name: 'get_pokemon' }),
+      }),
+      expect.any(Object),
+    )
+    expect(callTool).toHaveBeenCalledWith('get_pokemon', { pokemonId: 25 })
+    expect(close).toHaveBeenCalledOnce()
   })
 
-  it('does not expose an unverified provider mismatch as a candidate', async () => {
+  it('does not expose a provider candidate rejected by MCP', async () => {
+    const close = vi.fn(async () => undefined)
     const service = createCardRecognitionService({
       kimi: {
-        analyzeImage: vi.fn(async () => ({
-          pokemonId: 25,
-          name: 'raichu',
+        analyzeImageWithTool: vi.fn(async () => ({
+          id: 'call-1',
+          name: 'get_pokemon',
+          arguments: JSON.stringify({ pokemonId: 'mew-ex' }),
         })),
       },
-      catalog: {
-        getPokemon: vi.fn(async (identifier) =>
-          identifier === 'raichu'
-            ? pokemon({
-                pokemonId: 26,
-                name: 'raichu',
-                nameNormalized: 'raichu',
-              })
-            : pokemon(),
-        ),
-      },
+      createMcpClient: async () => ({
+        listTools: async () => [
+          {
+            name: 'get_pokemon',
+            description: 'Verified Pokémon details.',
+            inputSchema: { type: 'object' },
+          },
+        ],
+        callTool: async () => ({
+          operation: 'get_pokemon' as const,
+          subject: 'scan-user',
+          data: { error: 'Read-only operation unavailable' },
+        }),
+        close,
+      }),
     })
 
     await expect(
       service.recognize({ bytes: png, mediaType: 'image/png' }),
     ).rejects.toBeInstanceOf(RecognitionVerificationError)
+    expect(close).toHaveBeenCalledOnce()
   })
 })

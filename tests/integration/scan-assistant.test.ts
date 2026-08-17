@@ -221,14 +221,29 @@ describe('protected recognition and confirmation boundary', () => {
     expect(recognize).toHaveBeenCalledOnce()
   })
 
-  it('adds the correction indication to Kimi without changing server verification', async () => {
-    const analyzeImage = vi.fn(async () => ({
-      pokemonId: 25,
-      name: 'pikachu',
+  it('adds the correction indication to Kimi before MCP verification', async () => {
+    const analyzeImageWithTool = vi.fn(async () => ({
+      id: 'call-1',
+      name: 'get_pokemon',
+      arguments: JSON.stringify({ pokemonId: 25 }),
     }))
     const service = createCardRecognitionService({
-      kimi: { analyzeImage },
-      catalog: { getPokemon: vi.fn(async () => pokemon()) },
+      kimi: { analyzeImageWithTool },
+      createMcpClient: async () => ({
+        listTools: async () => [
+          {
+            name: 'get_pokemon',
+            description: 'Verified Pokémon details.',
+            inputSchema: { type: 'object' },
+          },
+        ],
+        callTool: async () => ({
+          operation: 'get_pokemon' as const,
+          subject: 'scan-user',
+          data: pokemon(),
+        }),
+        close: async () => undefined,
+      }),
     })
 
     await expect(
@@ -238,11 +253,14 @@ describe('protected recognition and confirmation boundary', () => {
         indication: 'La carta muestra un Pokémon de tipo agua.',
       }),
     ).resolves.toMatchObject({ pokemonId: 25, name: 'pikachu' })
-    expect(analyzeImage).toHaveBeenCalledWith(
+    expect(analyzeImageWithTool).toHaveBeenCalledWith(
       expect.objectContaining({
         prompt: expect.stringContaining(
           'La carta muestra un Pokémon de tipo agua.',
         ),
+      }),
+      expect.objectContaining({
+        function: expect.objectContaining({ name: 'get_pokemon' }),
       }),
       expect.objectContaining({ onReasoning: expect.any(Function) }),
     )

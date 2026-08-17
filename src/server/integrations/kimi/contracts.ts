@@ -6,7 +6,7 @@ export const KIMI_MODEL = 'kimi-k2.6' as const
 export const KIMI_API_BASE_URL = 'https://api.moonshot.ai/v1'
 export const KIMI_THINKING = { type: 'enabled' } as const
 export const KIMI_DEFAULT_PROMPT =
-  'Identify the Pokémon in this image. Return only the requested JSON.'
+  'Identify the Pokémon species shown on this card image.'
 
 export const KIMI_RESPONSE_FORMAT = {
   type: 'json_schema',
@@ -258,6 +258,14 @@ export interface KimiPort {
     input: ImageInput,
     options?: KimiAnalyzeOptions,
   ): Promise<KimiPokemonResult>
+}
+
+export interface KimiVisionToolPort {
+  analyzeImageWithTool(
+    input: ImageInput,
+    tool: KimiChatTool,
+    options?: KimiAnalyzeOptions,
+  ): Promise<KimiToolCall>
 }
 
 export type KimiConfig = {

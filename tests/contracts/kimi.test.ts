@@ -39,6 +39,7 @@ type CapturedRequest = {
   }>
   response_format?: unknown
   tools?: Array<{ type: string; function: { name: string } }>
+  tool_choice?: { type: string; function: { name: string } }
   stream: boolean
   thinking?: { type: string }
   temperature?: number
@@ -215,9 +216,17 @@ describe('Kimi direct adapter contract', () => {
       expect(request.thinking).toEqual(KIMI_THINKING)
       expect(request.temperature).toBeUndefined()
       expect(request.max_completion_tokens).toBeUndefined()
-      expect(request.messages).toHaveLength(1)
-      expect(request.messages[0]?.role).toBe('user')
-      const content = request.messages[0]?.content
+      expect(request.messages).toHaveLength(2)
+      expect(request.messages[0]?.role).toBe('system')
+      expect(request.messages[0]?.content).toEqual(expect.any(String))
+      expect(request.messages[0]?.content).toContain(
+        '{"pokemonId":151,"name":"mew"}',
+      )
+      expect(request.messages[0]?.content).toContain('National Pokédex')
+      expect(request.messages[0]?.content).toContain('base-species slug')
+      expect(request.messages[0]?.content).toContain('ex, EX, GX, V')
+      expect(request.messages[1]?.role).toBe('user')
+      const content = request.messages[1]?.content
       expect(Array.isArray(content) ? content[1] : undefined).toEqual({
         type: 'text',
         text: 'Identify this Pokémon.',
@@ -234,6 +243,77 @@ describe('Kimi direct adapter contract', () => {
         'deterministic-contract-key',
       )
       expect(request.response_format).toEqual(KIMI_RESPONSE_FORMAT)
+    } finally {
+      await server.close()
+    }
+  })
+
+  it('forces visual identification through the provided MCP tool', async () => {
+    const server = await startMockKimiServer({
+      payload: {
+        choices: [
+          {
+            finish_reason: 'tool_calls',
+            message: {
+              reasoning_content: 'The card title identifies the base species.',
+              content: '',
+              tool_calls: [
+                {
+                  id: 'call-1',
+                  type: 'function',
+                  function: {
+                    name: 'get_pokemon',
+                    arguments: JSON.stringify({ pokemonId: 151 }),
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    })
+    const reasoning: string[] = []
+
+    try {
+      const result = await createKimiAdapter({
+        apiKey: 'deterministic-contract-key',
+        baseUrl: server.baseUrl,
+      }).analyzeImageWithTool(
+        {
+          image: fixtureBytes,
+          mediaType: 'image/svg+xml',
+          prompt: 'Identify this Pokémon.',
+        },
+        {
+          type: 'function',
+          function: {
+            name: 'get_pokemon',
+            description: 'Verified PokéAPI-backed Pokémon details.',
+            parameters: { type: 'object' },
+          },
+        },
+        {
+          onReasoning: (delta) => {
+            reasoning.push(delta)
+          },
+        },
+      )
+
+      expect(result).toEqual({
+        id: 'call-1',
+        name: 'get_pokemon',
+        arguments: JSON.stringify({ pokemonId: 151 }),
+      })
+      expect(reasoning.join('')).toContain('base species')
+      const request = server.requests[0]
+      expect(request?.tools?.[0]?.function.name).toBe('get_pokemon')
+      expect(request?.tool_choice).toBeUndefined()
+      expect(request?.response_format).toBeUndefined()
+      expect(request?.thinking).toEqual(KIMI_THINKING)
+      expect(request?.max_completion_tokens).toBeUndefined()
+      expect(request?.messages[0]?.content).toContain(
+        'tool result is the authoritative answer',
+      )
     } finally {
       await server.close()
     }

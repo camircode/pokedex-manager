@@ -11,7 +11,6 @@ import {
   type RecognitionActivityEvent,
   type RecognitionCandidate,
 } from '@/server/card-recognition'
-import { getCatalogService } from '@/server/catalog'
 import { createEventStreamResponse } from '@/server/event-stream-response'
 import {
   apiError,
@@ -22,6 +21,7 @@ import {
   createConfiguredKimiAdapter,
   KimiAdapterError,
 } from '@/server/integrations/kimi'
+import { createMcpToolClient, McpClientError } from '@/server/integrations/mcp'
 
 const MAX_MULTIPART_BYTES = MAX_SCAN_IMAGE_BYTES + 128 * 1024
 
@@ -58,7 +58,7 @@ function streamRecognition(
         send({
           type: 'error',
           message:
-            error instanceof KimiAdapterError
+            error instanceof KimiAdapterError || error instanceof McpClientError
               ? 'El reconocimiento visual no está disponible en este momento.'
               : error instanceof Error && 'status' in error
                 ? error.message
@@ -74,7 +74,9 @@ export async function recognizeHandler(
   dependencies: RecognizeHandlerDependencies = {},
 ) {
   try {
-    await (dependencies.authenticate ?? requireUser)(request.headers)
+    const user = await (dependencies.authenticate ?? requireUser)(
+      request.headers,
+    )
     assertTrustedMutation(request)
     if (
       !request.headers.get('content-type')?.startsWith('multipart/form-data')
@@ -117,7 +119,7 @@ export async function recognizeHandler(
       const kimi = createConfiguredKimiAdapter()
       recognize = createCardRecognitionService({
         kimi,
-        catalog: await getCatalogService(),
+        createMcpClient: () => createMcpToolClient({ subject: user.id }),
       }).recognize
     }
     const recognitionInput = {
@@ -138,7 +140,9 @@ export async function recognizeHandler(
       { headers: { 'Cache-Control': 'no-store' } },
     )
   } catch (error) {
-    if (error instanceof KimiAdapterError) return unavailable()
+    if (error instanceof KimiAdapterError || error instanceof McpClientError) {
+      return unavailable()
+    }
     const response = apiError(error)
     response.headers.set('Cache-Control', 'no-store')
     return response
