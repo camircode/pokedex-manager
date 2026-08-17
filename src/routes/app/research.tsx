@@ -125,17 +125,6 @@ function Research() {
       {expedition && (
         <article className="expedition-sheet">
           <header>
-            <div className="expedition-provenance">
-              <span className={`status-badge ${expedition.status}`}>
-                {expedition.status === 'active' ? 'En curso' : 'Completada'}
-              </span>
-              {expedition.generation.mode === 'kimi' && (
-                <span className="status-badge active">
-                  Generada con Kimi · {expedition.generation.model}
-                </span>
-              )}
-            </div>
-            <p className="report-label">Narrativa generada</p>
             <h2>Investigación de colección</h2>
             <AiMarkdown content={expedition.narrative} />
           </header>

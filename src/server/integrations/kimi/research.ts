@@ -10,8 +10,8 @@ import {
   KIMI_THINKING,
   KimiAdapterError,
   type KimiAdapterOptions,
-  loadKimiConfig,
   kimiNarrativeSchema,
+  loadKimiConfig,
   type ResearchProposalPort,
   researchProposalInputSchema,
 } from '@/server/integrations/kimi/contracts'
@@ -39,9 +39,11 @@ export function createKimiResearchAdapter(
           {
             role: 'user' as const,
             content: [
-              'Escribe una propuesta narrativa de investigación de colección en español neutral.',
-              'No devuelvas JSON ni una estructura de campos. Redacta una pieza breve, con libertad para desarrollar la idea y el siguiente paso de la colección.',
-              'Usa únicamente el estado y las posibilidades proporcionadas. No inventes criterios, progreso, enlaces ni datos personales. Los objetivos verificables se calculan y validan por separado en el servidor.',
+              'Habla directamente con la persona sobre su colección de Pokémon. Escribe en español claro, cotidiano y fácil de entender.',
+              'Usa dos párrafos cortos. En el primero, resume qué tiene hoy la colección. En el segundo, recomienda un siguiente paso concreto.',
+              'Usa frases simples y palabras comunes como “tu colección”, “tienes” y “te falta”. Evita el tono académico, burocrático o grandilocuente y no uses palabras como “acervo”, “germinal”, “singularidad”, “panorama”, “tipológico” o “sistemático”.',
+              'Menciona como máximo tres tipos ausentes. Devuelve solo el texto final, sin título, etiquetas, listas ni explicaciones sobre estas instrucciones.',
+              'Usa únicamente el estado y las posibilidades proporcionadas. No inventes criterios, progreso, enlaces ni datos personales. El servidor calcula y valida los objetivos por separado.',
               JSON.stringify(parsedInput.data),
             ].join('\n'),
           },

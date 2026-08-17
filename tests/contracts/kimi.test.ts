@@ -323,6 +323,12 @@ describe('Kimi direct adapter contract', () => {
       expect(request?.max_completion_tokens).toBeUndefined()
       expect(request?.response_format).toBeUndefined()
       expect(typeof request?.messages[0]?.content).toBe('string')
+      const prompt = request?.messages[0]?.content
+      expect(prompt).toContain('español claro, cotidiano y fácil de entender')
+      expect(prompt).toContain('dos párrafos cortos')
+      expect(prompt).toContain('Evita el tono académico')
+      expect(prompt).toContain('Menciona como máximo tres tipos ausentes')
+      expect(prompt).not.toContain('con libertad para desarrollar la idea')
       const serialized = JSON.stringify(request)
       expect(serialized).not.toContain('user@example.com')
       expect(serialized).not.toContain('private raw note')

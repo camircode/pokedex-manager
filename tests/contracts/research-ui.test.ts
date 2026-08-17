@@ -7,12 +7,13 @@ const source = readFileSync(
   'utf8',
 )
 
-describe('research provenance UI contract', () => {
-  it('starts empty and offers only explicit AI generation', () => {
-    expect(source).toContain('Generada con Kimi')
+describe('research UI contract', () => {
+  it('starts empty and presents generated research without redundant labels', () => {
     expect(source).toContain('Aún no hay una investigación activa')
     expect(source).toContain('Generar con IA')
+    expect(source).toContain('<h2>Investigación de colección</h2>')
+    expect(source).not.toContain('Generada con Kimi')
+    expect(source).not.toContain('Narrativa generada')
     expect(source).not.toContain('Plan base por reglas')
-    expect(source).toContain("generation.mode === 'kimi'")
   })
 })

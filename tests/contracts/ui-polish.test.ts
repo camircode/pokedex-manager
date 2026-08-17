@@ -234,9 +234,19 @@ describe('Pokedex URL and responsive UI contracts', () => {
     expect(reasoning).toContain("from '@/components/prompt-kit/steps'")
     expect(reasoning).toContain('Razonamiento de Kimi')
     expect(reasoning).not.toContain('AiReasoningStep')
+    expect(reasoning).toContain('function ReasoningStep')
+    expect(reasoning).toContain('hn hn-sparkles')
+    expect(reasoning).toContain('setOpen(active)')
     expect(promptKitSteps).toContain('export function Steps')
     expect(promptKitSteps).toContain('export const StepsItem')
     expect(promptKitSteps).toContain('export const StepsContent')
+    expect(promptKitSteps).toContain('prompt-steps-item-trigger')
+    expect(promptKitSteps).toContain('prompt-steps-item-content')
+    expect(promptKitSteps).toContain('prompt-steps-chevron')
+    expect(research).not.toContain('Narrativa generada')
+    expect(research).not.toContain(
+      'Generada con Kimi · {expedition.generation.model}',
+    )
     expect(styles).toContain('@keyframes prompt-steps-spin')
     expect(styles).toMatch(
       /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.spinning[\s\S]*animation: none/,

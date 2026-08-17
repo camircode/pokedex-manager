@@ -1,4 +1,3 @@
-import { ChevronDown } from 'lucide-react'
 import type React from 'react'
 
 import {
@@ -11,30 +10,51 @@ function classNames(...values: Array<string | undefined | false>) {
   return values.filter(Boolean).join(' ')
 }
 
-export type StepsItemProps = React.ComponentProps<'div'>
+export type StepsItemProps = Omit<
+  React.ComponentProps<typeof Collapsible>,
+  'title'
+> & {
+  icon: React.ReactNode
+  title: React.ReactNode
+}
 
 export const StepsItem = ({
   children,
   className,
+  icon,
+  title,
   ...props
 }: StepsItemProps) => (
-  <div className={classNames('prompt-steps-item', className)} {...props}>
-    {children}
-  </div>
+  <Collapsible
+    className={classNames('prompt-steps-item', className)}
+    {...props}
+  >
+    <CollapsibleTrigger className="prompt-steps-item-trigger">
+      <span className="prompt-steps-item-icon" aria-hidden="true">
+        {icon}
+      </span>
+      <span className="prompt-steps-item-title">{title}</span>
+      <i
+        className="hn hn-chevron-down prompt-steps-item-chevron"
+        aria-hidden="true"
+      />
+    </CollapsibleTrigger>
+    <CollapsibleContent className="prompt-steps-item-content">
+      {children}
+    </CollapsibleContent>
+  </Collapsible>
 )
 
 export type StepsTriggerProps = React.ComponentProps<
   typeof CollapsibleTrigger
 > & {
   leftIcon?: React.ReactNode
-  swapIconOnHover?: boolean
 }
 
 export const StepsTrigger = ({
   children,
   className,
   leftIcon,
-  swapIconOnHover = true,
   ...props
 }: StepsTriggerProps) => (
   <CollapsibleTrigger
@@ -44,22 +64,12 @@ export const StepsTrigger = ({
     <span className="prompt-steps-trigger-copy">
       {leftIcon ? (
         <span className="prompt-steps-left-icon">
-          <span
-            className={classNames(
-              'prompt-steps-primary-icon',
-              swapIconOnHover && 'swappable',
-            )}
-          >
-            {leftIcon}
-          </span>
-          {swapIconOnHover && (
-            <ChevronDown className="prompt-steps-hover-icon" aria-hidden />
-          )}
+          <span className="prompt-steps-primary-icon">{leftIcon}</span>
         </span>
       ) : null}
       <span>{children}</span>
     </span>
-    {!leftIcon && <ChevronDown className="prompt-steps-chevron" aria-hidden />}
+    <i className="hn hn-chevron-down prompt-steps-chevron" aria-hidden="true" />
   </CollapsibleTrigger>
 )
 
