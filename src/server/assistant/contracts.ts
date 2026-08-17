@@ -3,6 +3,7 @@ import '@tanstack/react-start/server-only'
 import { z } from 'zod'
 
 import type { KIMI_MODEL } from '@/server/integrations/kimi'
+import type { KimiReasoningEvent } from '@/server/integrations/kimi'
 import type { McpToolName } from '@/server/integrations/mcp'
 
 export const MAX_ASSISTANT_TOOL_OPERATIONS = 6
@@ -47,6 +48,7 @@ export type AssistantCapability = {
 }
 
 export type AssistantActivityEvent =
+  | KimiReasoningEvent
   | { type: 'status'; phase: 'thinking' | 'writing' }
   | { type: 'tool_call'; operation: AssistantToolOperation }
   | {
