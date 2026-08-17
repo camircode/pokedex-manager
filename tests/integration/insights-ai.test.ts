@@ -11,10 +11,7 @@ import {
 
 import { insightsHandler } from '../../src/routes/api/insights'
 import type { CollectionEntry } from '../../src/server/collection'
-import {
-  createInsightsService,
-  type InsightsActivityEvent,
-} from '../../src/server/insights'
+import { createInsightsService } from '../../src/server/insights'
 import type { InsightsProposalPort } from '../../src/server/integrations/kimi'
 
 const mongoUri =
@@ -118,7 +115,7 @@ describe('grounded AI insights', () => {
     })
   })
 
-  it('streams real process phases and completion', async () => {
+  it('streams Kimi reasoning and completion', async () => {
     const response = await insightsHandler(
       new Request('http://localhost/api/insights', {
         method: 'POST',
@@ -128,15 +125,10 @@ describe('grounded AI insights', () => {
         authenticate: async () => ({ id: 'insights-stream-user' }),
         capability: () => true,
         generate: async (_userId, report) => {
-          for (const phase of [
-            'collecting',
-            'preparing',
-            'interpreting',
-            'validating',
-            'persisting',
-          ] as const) {
-            await report?.({ type: 'phase', phase })
-          }
+          await report?.({
+            type: 'reasoning',
+            delta: 'La distribución muestra una colección concentrada.',
+          })
           return {
             userId: 'insights-stream-user',
             type: 'collection-overview',
@@ -153,15 +145,9 @@ describe('grounded AI insights', () => {
 
     const body = await response.text()
     expect(response.headers.get('content-type')).toContain('text/event-stream')
-    for (const phase of [
-      'collecting',
-      'preparing',
-      'interpreting',
-      'validating',
-      'persisting',
-    ] satisfies InsightsActivityEvent['phase'][]) {
-      expect(body).toContain(`"phase":"${phase}"`)
-    }
+    expect(body).toContain('"type":"reasoning"')
+    expect(body).toContain('colección concentrada')
+    expect(body).not.toContain('"type":"phase"')
     expect(body).toContain('"type":"complete"')
   })
 })

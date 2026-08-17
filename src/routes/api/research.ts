@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { requireUser } from '@/server/auth'
 import { apiError, assertTrustedMutation } from '@/server/http'
+import { createEventStreamResponse } from '@/server/event-stream-response'
 import { KimiAdapterError } from '@/server/integrations/kimi'
 import {
   generateResearchWithKimi,
@@ -23,6 +24,7 @@ type ResearchHandlerDependencies = {
   generate?: (
     userId: string,
     report?: (event: ResearchActivityEvent) => void | Promise<void>,
+    signal?: AbortSignal,
   ) => Promise<ResearchExpedition>
   capability?: () => boolean
 }
@@ -31,14 +33,10 @@ function streamResearch(
   generate: NonNullable<ResearchHandlerDependencies['generate']>,
   userId: string,
 ) {
-  const encoder = new TextEncoder()
-  const stream = new ReadableStream<Uint8Array>({
-    async start(controller) {
-      const send = (event: ResearchStreamEvent) => {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`))
-      }
+  return createEventStreamResponse<ResearchStreamEvent>(
+    async (send, signal) => {
       try {
-        const expedition = await generate(userId, send)
+        const expedition = await generate(userId, send, signal)
         send({ type: 'complete', expedition })
       } catch (error) {
         send({
@@ -48,19 +46,9 @@ function streamResearch(
               ? 'La generación con Kimi no está disponible en este momento.'
               : 'No se pudo generar la investigación.',
         })
-      } finally {
-        controller.close()
       }
     },
-  })
-  return new Response(stream, {
-    headers: {
-      'Cache-Control': 'no-store',
-      'Content-Type': 'text/event-stream; charset=utf-8',
-      Connection: 'keep-alive',
-      'X-Accel-Buffering': 'no',
-    },
-  })
+  )
 }
 
 function unavailableResponse() {
@@ -91,7 +79,7 @@ export async function researchHandler(
       if (request.headers.get('Accept')?.includes('text/event-stream')) {
         return streamResearch(generate, user.id)
       }
-      const expedition = await generate(user.id)
+      const expedition = await generate(user.id, undefined, request.signal)
       return Response.json(
         { expedition, capability: getResearchCapability() },
         { status: 201, headers: { 'Cache-Control': 'no-store' } },
