@@ -237,25 +237,27 @@ describe('protected recognition and confirmation boundary', () => {
           'La carta muestra un Pokémon de tipo agua.',
         ),
       }),
+      expect.objectContaining({ onReasoning: expect.any(Function) }),
     )
   })
 
-  it('streams validation, Kimi identification, and PokéAPI verification', async () => {
+  it('streams Kimi visual reasoning without fabricated phases', async () => {
     const response = await recognizeHandler(imageRequest(true), {
       authenticate: async () => ({ id: 'scan-stream-user' }),
       recognize: async (_input, report) => {
-        await report?.({ type: 'phase', phase: 'validating' })
-        await report?.({ type: 'phase', phase: 'identifying' })
-        await report?.({ type: 'phase', phase: 'verifying' })
+        await report?.({
+          type: 'reasoning',
+          delta: 'La carta muestra rasgos visuales de Pikachu.',
+        })
         return candidate()
       },
     })
 
     const body = await response.text()
     expect(response.headers.get('content-type')).toContain('text/event-stream')
-    expect(body).toContain('"phase":"validating"')
-    expect(body).toContain('"phase":"identifying"')
-    expect(body).toContain('"phase":"verifying"')
+    expect(body).toContain('"type":"reasoning"')
+    expect(body).toContain('rasgos visuales de Pikachu')
+    expect(body).not.toContain('"type":"phase"')
     expect(body).toContain('"type":"complete"')
   })
 })
@@ -503,7 +505,7 @@ describe('assistant ownership, persistence and no-key behavior', () => {
     })
   })
 
-  it('streams thinking, tool activity and the completed message', async () => {
+  it('streams Kimi reasoning, tool activity and the completed message', async () => {
     const response = await assistantHandler(
       new Request(`${baseUrl}/api/assistant`, {
         method: 'POST',
@@ -523,7 +525,10 @@ describe('assistant ownership, persistence and no-key behavior', () => {
               _input: unknown,
               report?: (event: AssistantActivityEvent) => void | Promise<void>,
             ) => {
-              await report?.({ type: 'status', phase: 'thinking' })
+              await report?.({
+                type: 'reasoning',
+                delta: 'Necesito consultar las estadísticas verificadas.',
+              })
               await report?.({
                 type: 'tool_call',
                 operation: { name: 'get_collection_stats', input: {} },
@@ -557,7 +562,8 @@ describe('assistant ownership, persistence and no-key behavior', () => {
     expect(response.status).toBe(200)
     expect(response.headers.get('content-type')).toContain('text/event-stream')
     const body = await response.text()
-    expect(body).toContain('"type":"status","phase":"thinking"')
+    expect(body).toContain('"type":"reasoning"')
+    expect(body).toContain('estadísticas verificadas')
     expect(body).toContain('"type":"tool_call"')
     expect(body).toContain('"type":"tool_result"')
     expect(body).toContain('"type":"complete"')

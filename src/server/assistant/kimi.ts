@@ -72,6 +72,7 @@ export async function answerWithKimi(input: {
   context: AssistantContextMessage[]
   executeTool: (operation: AssistantToolOperation) => Promise<ToolAnswer>
   report?: AssistantActivityReporter
+  signal?: AbortSignal
 }): Promise<ToolAnswer & { operations: AssistantToolOperation[] }> {
   const kimiMessages: KimiChatMessage[] = [
     { role: 'system', content: ASSISTANT_SYSTEM_PROMPT },
@@ -86,14 +87,16 @@ export async function answerWithKimi(input: {
   const verifiedAnswers: string[] = []
 
   while (true) {
-    await input.report?.({
-      type: 'status',
-      phase: operations.length === 0 ? 'thinking' : 'writing',
-    })
-    const completion = await input.chat.complete({
-      messages: kimiMessages,
-      tools: input.tools,
-    })
+    const completion = await input.chat.complete(
+      {
+        messages: kimiMessages,
+        tools: input.tools,
+      },
+      {
+        signal: input.signal,
+        onReasoning: (delta) => input.report?.({ type: 'reasoning', delta }),
+      },
+    )
     if (completion.finishReason === 'stop') {
       return { answer: completion.content, citations, operations }
     }
@@ -106,22 +109,27 @@ export async function answerWithKimi(input: {
     }
     const requested = completion.toolCalls.map(parseAssistantToolCall)
     if (operations.length + requested.length > MAX_ASSISTANT_TOOL_OPERATIONS) {
-      await input.report?.({ type: 'status', phase: 'writing' })
       const verifiedAnswer =
         verifiedAnswers.length > 0
           ? `Con los datos verificados disponibles:\n\n${verifiedAnswers.join('\n\n')}`
           : 'No pude reunir contexto suficiente para responder con datos verificados. Intenta acotar la consulta a tu colección, estadísticas, una comparación o una búsqueda.'
-      const synthesis = await input.chat.complete({
-        messages: [
-          ...kimiMessages,
-          {
-            role: 'system',
-            content:
-              'Ya alcanzaste el presupuesto de herramientas. Responde ahora usando únicamente los resultados verificados disponibles y conserva sus referencias [n].',
-          },
-        ],
-        tools: [],
-      })
+      const synthesis = await input.chat.complete(
+        {
+          messages: [
+            ...kimiMessages,
+            {
+              role: 'system',
+              content:
+                'Ya alcanzaste el presupuesto de herramientas. Responde ahora usando únicamente los resultados verificados disponibles y conserva sus referencias [n].',
+            },
+          ],
+          tools: [],
+        },
+        {
+          signal: input.signal,
+          onReasoning: (delta) => input.report?.({ type: 'reasoning', delta }),
+        },
+      )
       return {
         answer:
           synthesis.finishReason === 'stop'
@@ -134,6 +142,7 @@ export async function answerWithKimi(input: {
     kimiMessages.push({
       role: 'assistant',
       content: completion.content,
+      reasoningContent: completion.reasoningContent,
       toolCalls: completion.toolCalls,
     })
 

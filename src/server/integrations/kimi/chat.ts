@@ -1,14 +1,12 @@
 import '@tanstack/react-start/server-only'
 
 import {
-  executeKimiRequest,
-  parseKimiChatResponse,
+  executeKimiStreamRequest,
+  parseKimiStreamChatResponse,
   validateAdapterOptions,
 } from '@/server/integrations/kimi/client'
 import {
-  KIMI_ASSISTANT_MAX_COMPLETION_TOKENS,
   KIMI_MODEL,
-  KIMI_TEMPERATURE,
   KIMI_THINKING,
   KimiAdapterError,
   type KimiAdapterOptions,
@@ -54,6 +52,9 @@ export function createKimiChatAdapter(
           return {
             role: message.role,
             content: message.content,
+            ...(message.reasoningContent !== undefined
+              ? { reasoning_content: message.reasoningContent }
+              : {}),
             tool_calls: message.toolCalls.map((toolCall) => ({
               id: toolCall.id,
               type: 'function' as const,
@@ -67,19 +68,18 @@ export function createKimiChatAdapter(
         return message
       })
 
-      return executeKimiRequest(
+      return executeKimiStreamRequest(
         validated,
         {
           model: KIMI_MODEL,
           messages,
           ...(input.tools.length > 0 ? { tools: input.tools } : {}),
-          stream: false as const,
+          stream: true as const,
           thinking: KIMI_THINKING,
-          temperature: KIMI_TEMPERATURE,
-          max_completion_tokens: KIMI_ASSISTANT_MAX_COMPLETION_TOKENS,
         },
         completeOptions.signal,
-        parseKimiChatResponse,
+        parseKimiStreamChatResponse,
+        completeOptions.onReasoning,
       )
     },
   }
@@ -98,6 +98,5 @@ export function createConfiguredKimiChatAdapter(
     apiKey: config.apiKey,
     baseUrl: options.baseUrl,
     fetch: options.fetch,
-    timeoutMs: config.timeoutMs,
   })
 }

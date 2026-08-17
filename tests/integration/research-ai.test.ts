@@ -132,6 +132,7 @@ describe('AI research persistence boundary', () => {
       expect.objectContaining({
         aggregate: expect.objectContaining({ uniqueCount: 1 }),
       }),
+      expect.objectContaining({ onReasoning: expect.any(Function) }),
     )
     expect(
       JSON.stringify(vi.mocked(proposal.propose).mock.calls),
@@ -245,7 +246,7 @@ describe('AI research persistence boundary', () => {
 })
 
 describe('research API capability boundary', () => {
-  it('streams the real generation phases before completion', async () => {
+  it('streams Kimi reasoning before completion', async () => {
     const response = await researchHandler(
       new Request('http://localhost/api/research', {
         method: 'POST',
@@ -255,15 +256,10 @@ describe('research API capability boundary', () => {
         authenticate: async () => ({ id: 'research-stream-user' }),
         capability: () => true,
         generate: async (_userId, report) => {
-          for (const phase of [
-            'collecting',
-            'preparing',
-            'generating',
-            'validating',
-            'persisting',
-          ] as const) {
-            await report?.({ type: 'phase', phase })
-          }
+          await report?.({
+            type: 'reasoning',
+            delta: 'Conviene ampliar los tipos ausentes.',
+          })
           return {
             ...buildExpedition('research-stream-user', []),
             generation: {
@@ -278,15 +274,9 @@ describe('research API capability boundary', () => {
 
     const body = await response.text()
     expect(response.headers.get('content-type')).toContain('text/event-stream')
-    for (const phase of [
-      'collecting',
-      'preparing',
-      'generating',
-      'validating',
-      'persisting',
-    ]) {
-      expect(body).toContain(`"phase":"${phase}"`)
-    }
+    expect(body).toContain('"type":"reasoning"')
+    expect(body).toContain('tipos ausentes')
+    expect(body).not.toContain('"type":"phase"')
     expect(body).toContain('"type":"complete"')
   })
 

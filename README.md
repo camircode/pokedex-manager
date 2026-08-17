@@ -115,8 +115,6 @@ pnpm dev
 | `MCP_SUBJECT` | Solo para MCP HTTP | ID de Better Auth cuya información privada podrá leer ese bearer. |
 | `KIMI_LIVE_ENABLED` | No | Activa Kimi únicamente cuando vale `true`. |
 | `MOONSHOT_API_KEY` | Sí con Kimi | Clave privada de Moonshot; nunca llega al cliente. |
-| `KIMI_TIMEOUT_MS` | No | Timeout del proveedor; valor predeterminado: `10000`. |
-| `KIMI_VISION_TIMEOUT_MS` | No | Timeout para reconocimiento de imágenes, que requiere más tiempo; valor predeterminado: `30000`. |
 | `MONGO_TEST_URI` | No | URI MongoDB usada por pruebas de integración. |
 | `MONGO_TEST_DB_NAME` | No | Base de pruebas cuando una suite no crea un nombre aislado. |
 
@@ -337,8 +335,6 @@ MCP_BEARER_TOKEN=
 MCP_SUBJECT=
 KIMI_LIVE_ENABLED=false
 MOONSHOT_API_KEY=
-KIMI_TIMEOUT_MS=10000
-KIMI_VISION_TIMEOUT_MS=30000
 ```
 
 Deja ambas variables MCP vacías para deshabilitar el acceso HTTP externo. Si activas Kimi, define `KIMI_LIVE_ENABLED=true` y una clave válida.
@@ -364,7 +360,7 @@ El proxy debe:
 - Desactivar buffering para las rutas SSE del asistente, hallazgos, investigación y reconocimiento.
 - Limitar cuerpos a 6 MB como defensa adicional sobre el límite de aplicación.
 - Aplicar límites de solicitudes a registro, inicio de sesión y operaciones Kimi.
-- Mantener timeouts superiores a `KIMI_TIMEOUT_MS` para no cortar una respuesta válida antes que la aplicación.
+- Permitir conexiones SSE de larga duración. La aplicación envía pulsos de actividad y espera a que Kimi complete la respuesta, sin imponer un plazo artificial.
 
 Ejemplo mínimo de la ubicación Nginx:
 
