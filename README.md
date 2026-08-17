@@ -115,7 +115,7 @@ pnpm dev
 | `MCP_SUBJECT` | Solo para MCP HTTP | ID de Better Auth cuya información privada podrá leer ese bearer. |
 | `KIMI_LIVE_ENABLED` | No | Activa Kimi únicamente cuando vale `true`. |
 | `MOONSHOT_API_KEY` | Sí con Kimi | Clave privada de Moonshot; nunca llega al cliente. |
-| `KIMI_TIMEOUT_MS` | No | Timeout del proveedor; valor predeterminado: `10000`. |
+| `KIMI_TIMEOUT_MS` | No | Timeout de texto del proveedor; valor predeterminado: `60000`, para dar margen al razonamiento de Kimi. |
 | `KIMI_VISION_TIMEOUT_MS` | No | Timeout para reconocimiento de imágenes, que requiere más tiempo; valor predeterminado: `30000`. |
 | `MONGO_TEST_URI` | No | URI MongoDB usada por pruebas de integración. |
 | `MONGO_TEST_DB_NAME` | No | Base de pruebas cuando una suite no crea un nombre aislado. |
@@ -337,7 +337,7 @@ MCP_BEARER_TOKEN=
 MCP_SUBJECT=
 KIMI_LIVE_ENABLED=false
 MOONSHOT_API_KEY=
-KIMI_TIMEOUT_MS=10000
+KIMI_TIMEOUT_MS=60000
 KIMI_VISION_TIMEOUT_MS=30000
 ```
 

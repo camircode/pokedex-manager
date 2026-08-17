@@ -4,7 +4,7 @@ import { z } from 'zod'
 
 export const KIMI_MODEL = 'kimi-k2.6' as const
 export const KIMI_API_BASE_URL = 'https://api.moonshot.ai/v1'
-export const KIMI_DEFAULT_TIMEOUT_MS = 10_000
+export const KIMI_DEFAULT_TIMEOUT_MS = 60_000
 export const KIMI_VISION_DEFAULT_TIMEOUT_MS = 30_000
 export const KIMI_TEMPERATURE = 1
 export const KIMI_THINKING = { type: 'enabled' } as const
