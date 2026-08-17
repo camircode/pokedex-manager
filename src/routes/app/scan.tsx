@@ -171,7 +171,7 @@ function Scan() {
             <div className="button-row" aria-describedby="scan-image-help">
               <button
                 type="button"
-                className="button secondary"
+                className="button secondary scan-camera-button"
                 disabled={preparingImage}
                 onClick={() => cameraInput.current?.click()}
               >

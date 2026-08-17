@@ -255,9 +255,14 @@ describe('Pokedex URL and responsive UI contracts', () => {
 
   it('offers camera capture without removing file selection', () => {
     const scan = read('src/routes/app/scan.tsx')
+    const responsive = read('src/styles/responsive.css')
 
     expect(scan).toContain('capture="environment"')
     expect(scan).toContain('Tomar foto')
+    expect(scan).toContain('className="button secondary scan-camera-button"')
+    expect(responsive).toMatch(
+      /@media \(min-width: 981px\)\s*{\s*\.scan-camera-button\s*{\s*display: none;/,
+    )
     expect(scan).toContain('Elegir archivo')
   })
 
