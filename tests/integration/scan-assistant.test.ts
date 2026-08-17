@@ -237,25 +237,27 @@ describe('protected recognition and confirmation boundary', () => {
           'La carta muestra un Pokémon de tipo agua.',
         ),
       }),
+      expect.objectContaining({ onReasoning: expect.any(Function) }),
     )
   })
 
-  it('streams validation, Kimi identification, and PokéAPI verification', async () => {
+  it('streams Kimi visual reasoning without fabricated phases', async () => {
     const response = await recognizeHandler(imageRequest(true), {
       authenticate: async () => ({ id: 'scan-stream-user' }),
       recognize: async (_input, report) => {
-        await report?.({ type: 'phase', phase: 'validating' })
-        await report?.({ type: 'phase', phase: 'identifying' })
-        await report?.({ type: 'phase', phase: 'verifying' })
+        await report?.({
+          type: 'reasoning',
+          delta: 'La carta muestra rasgos visuales de Pikachu.',
+        })
         return candidate()
       },
     })
 
     const body = await response.text()
     expect(response.headers.get('content-type')).toContain('text/event-stream')
-    expect(body).toContain('"phase":"validating"')
-    expect(body).toContain('"phase":"identifying"')
-    expect(body).toContain('"phase":"verifying"')
+    expect(body).toContain('"type":"reasoning"')
+    expect(body).toContain('rasgos visuales de Pikachu')
+    expect(body).not.toContain('"type":"phase"')
     expect(body).toContain('"type":"complete"')
   })
 })
