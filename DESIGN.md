@@ -30,8 +30,9 @@ La interfaz se comporta como un índice de campo y un libro de registro de labor
 
 ## Iconografía
 
-- Se usa exclusivamente el iconfont de [HackerNoon Pixel Icon Library](https://pixeliconlibrary.com) mediante `<i className="hn hn-…" aria-hidden="true">`.
-- Todo control interactivo conserva texto visible o nombre accesible. No se mezclan familias de iconos.
+- Los iconos generales de interfaz usan el iconfont de [HackerNoon Pixel Icon Library](https://pixeliconlibrary.com) mediante `<i className="hn hn-…" aria-hidden="true">`.
+- La actividad de herramientas MCP usa exclusivamente el glifo vectorial de Model Context Protocol para distinguir el protocolo de las fases de razonamiento. El SVG hereda el color del estado y no sustituye la etiqueta visible de la operación.
+- Todo control interactivo conserva texto visible o nombre accesible. No se mezclan familias de iconos genéricos; el glifo MCP se reserva para operaciones MCP.
 - Los iconos se usan sin modificaciones bajo [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) y la atribución aparece en README y Ajustes.
 
 ## Navegación adaptable
@@ -52,7 +53,7 @@ La interfaz se comporta como un índice de campo y un libro de registro de labor
 - Hallazgos separa la evidencia calculada de una interpretación narrativa libre de Kimi. La narrativa nunca se presenta como métrica objetiva; los datos entregados al modelo permanecen disponibles en una divulgación separada.
 - Investigación presenta la narrativa de Kimi como una lectura continua, sin etiquetas redundantes sobre su título, y conserva el progreso verificable en un registro independiente del texto generado.
 - Reconocimiento permite rechazar una propuesta sin volver a cargar la imagen: el siguiente intento puede ejecutarse automáticamente o recibir una indicación opcional.
-- Hallazgos, Investigación, Reconocimiento y Asistente muestran el razonamiento real recibido por SSE mediante Prompt Kit Steps. El conjunto completo y cada paso se pueden contraer por separado; cada paso conserva un icono de la biblioteca HackerNoon y solo el paso activo se anima. `prefers-reduced-motion` detiene esa animación y nunca se muestran fases, tiempos ni porcentajes ficticios.
+- Hallazgos, Investigación, Reconocimiento y Asistente muestran el razonamiento real recibido por SSE mediante Prompt Kit Steps. El conjunto completo y cada paso se pueden contraer por separado; los pasos de razonamiento usan HackerNoon y las operaciones MCP usan el glifo del protocolo. Solo el paso activo se anima; `prefers-reduced-motion` detiene esa animación y nunca se muestran fases, tiempos ni porcentajes ficticios.
 - El asistente presenta la consulta de inmediato y comunica por SSE las fases reales de análisis, llamadas MCP y redacción. Kimi descubre herramientas mediante `tools/list` y el servidor ejecuta `tools/call` sobre una sesión MCP oficial en memoria cuyo principal es la cuenta autenticada. Las respuestas usan Markdown seguro sin HTML crudo; cada referencia se muestra como “Fuente n”, abre su evidencia y el detalle persistido enumera nombres MCP y fuentes con lenguaje comprensible. Durante el envío, un ancla inferior conserva el final del hilo visible incluso al reconciliar el mensaje provisional con el historial persistido.
 
 ## Movimiento

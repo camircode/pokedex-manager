@@ -176,6 +176,11 @@
 .ai-reasoning-icon {
   font-size: 0.95rem;
 }
+.ai-reasoning-mcp-icon {
+  display: block;
+  width: 0.95rem;
+  height: 0.95rem;
+}
 .ai-reasoning-item.tool .prompt-steps-item-icon {
   color: var(--accent-dark);
 }
