@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
+import { AiReasoning, type AiReasoningStep } from '@/components/ai-reasoning'
 import { EmptyState, ErrorState, LoadingState } from '@/components/status'
 import { consumeEventStream } from '@/lib/event-stream'
 import { useApi } from '@/lib/ui'
@@ -38,6 +39,35 @@ function operationDetail(operation: AssistantToolOperation) {
   const label = toolLabels[operation.name] ?? operation.name
   const values = Object.values(operation.input).map(String)
   return values.length === 0 ? label : `${label}: ${values.join(' · ')}`
+}
+
+function assistantReasoningSteps(
+  events: AssistantActivityEvent[],
+): AiReasoningStep[] {
+  return events.map((event, index) => {
+    const phase = `assistant-event-${index}`
+    if (event.type === 'status') {
+      return {
+        phase,
+        label:
+          event.phase === 'writing'
+            ? 'Redactar la respuesta'
+            : 'Analizar la consulta',
+      }
+    }
+    if (event.type === 'tool_call') {
+      return { phase, label: operationDetail(event.operation) }
+    }
+    const sourceCount = event.citations.length
+    const sourceLabel = `${sourceCount} fuente${sourceCount === 1 ? '' : 's'} verificada${sourceCount === 1 ? '' : 's'}`
+    return {
+      phase,
+      label:
+        sourceCount > 0
+          ? `Verificar ${sourceLabel}`
+          : `Verificar resultado de ${toolLabels[event.operation.name]}`,
+    }
+  })
 }
 
 function citationAnchor(messageId: string, citationId: number) {
@@ -164,66 +194,26 @@ function MessageEntry({ message }: { message: AssistantMessage }) {
 
 function AssistantActivity({
   events,
-  elapsedSeconds,
+  startedAt,
+  status,
 }: {
   events: AssistantActivityEvent[]
-  elapsedSeconds: number
+  startedAt: number
+  status: 'running' | 'complete' | 'error'
 }) {
-  const phase = [...events].reverse().find((event) => event.type === 'status')
-  const label =
-    phase?.type === 'status' && phase.phase === 'writing'
-      ? 'Redactando respuesta'
-      : 'Analizando la consulta'
-  const operations = events.filter(
-    (event): event is Extract<AssistantActivityEvent, { type: 'tool_call' }> =>
-      event.type === 'tool_call',
-  )
-  const results = events.filter(
-    (
-      event,
-    ): event is Extract<AssistantActivityEvent, { type: 'tool_result' }> =>
-      event.type === 'tool_result',
-  )
+  const steps = assistantReasoningSteps(events)
 
   return (
     <li className="message assistant pending">
       <span className="message-role">Asistente</span>
-      <div className="thinking-status" role="status">
-        <span className="thinking-dots" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </span>
-        <strong>{label}</strong>
-        <span>{elapsedSeconds} s</span>
-      </div>
-      {(operations.length > 0 || results.length > 0) && (
-        <details className="assistant-activity" open>
-          <summary>Actividad MCP</summary>
-          <ol>
-            {operations.map((event, index) => {
-              const result = results[index]
-              return (
-                <li key={JSON.stringify(event.operation)}>
-                  <i
-                    className={`hn ${result ? 'hn-check' : 'hn-cog'}`}
-                    aria-hidden="true"
-                  />
-                  <div>
-                    <strong>{operationDetail(event.operation)}</strong>
-                    <code>{event.operation.name}</code>
-                    <span>
-                      {result
-                        ? `${result.citations.length} fuente${result.citations.length === 1 ? '' : 's'} verificada${result.citations.length === 1 ? '' : 's'}`
-                        : 'Consultando…'}
-                    </span>
-                  </div>
-                </li>
-              )
-            })}
-          </ol>
-        </details>
-      )}
+      <AiReasoning
+        className="assistant-reasoning"
+        title="Construcción de la respuesta"
+        steps={steps}
+        phases={steps.map(({ phase }) => phase)}
+        status={status}
+        startedAt={startedAt}
+      />
     </li>
   )
 }
@@ -248,9 +238,11 @@ function Assistant() {
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
   const [activity, setActivity] = useState<AssistantActivityEvent[]>([])
+  const [activityStartedAt, setActivityStartedAt] = useState<number | null>(
+    null,
+  )
   const [pendingUserMessage, setPendingUserMessage] = useState('')
   const [completedMessage, setCompletedMessage] = useState<AssistantMessage>()
-  const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [followResponse, setFollowResponse] = useState(false)
   const threadEndRef = useRef<HTMLDivElement>(null)
   const query = conversationId
@@ -262,15 +254,6 @@ function Assistant() {
     history.data?.messages?.some(
       (entry) => entry.id === completedMessage.id,
     ) === true
-
-  useEffect(() => {
-    if (!sending) return
-    const startedAt = Date.now()
-    const timer = window.setInterval(() => {
-      setElapsedSeconds(Math.floor((Date.now() - startedAt) / 1_000))
-    }, 1_000)
-    return () => window.clearInterval(timer)
-  }, [sending])
 
   useLayoutEffect(() => {
     if (!followResponse) return
@@ -285,6 +268,8 @@ function Assistant() {
     if (completedPersisted) {
       setPendingUserMessage('')
       setCompletedMessage(undefined)
+      setActivity([])
+      setActivityStartedAt(null)
       setFollowResponse(false)
     } else if (!sending && error) {
       setFollowResponse(false)
@@ -297,8 +282,8 @@ function Assistant() {
     setSending(true)
     setError('')
     setActivity([])
+    setActivityStartedAt(Date.now())
     setCompletedMessage(undefined)
-    setElapsedSeconds(0)
     setPendingUserMessage(content)
     setMessage('')
     setFollowResponse(true)
@@ -366,6 +351,7 @@ function Assistant() {
             setMessage('')
             setError('')
             setActivity([])
+            setActivityStartedAt(null)
             setPendingUserMessage('')
             setCompletedMessage(undefined)
             setFollowResponse(false)
@@ -447,10 +433,11 @@ function Assistant() {
                 <p>{pendingUserMessage}</p>
               </li>
             )}
-            {sending && (
+            {activityStartedAt !== null && !completedPersisted && (
               <AssistantActivity
                 events={activity}
-                elapsedSeconds={elapsedSeconds}
+                startedAt={activityStartedAt}
+                status={sending ? 'running' : error ? 'error' : 'complete'}
               />
             )}
             {completedMessage && !completedPersisted && (
