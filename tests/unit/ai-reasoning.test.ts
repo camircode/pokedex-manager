@@ -35,4 +35,24 @@ Debo recomendar un siguiente paso concreto. La colección todavía es pequeña.`
     expect(markup.match(/prompt-steps-item-chevron/g)).toHaveLength(2)
     expect(markup.match(/hn-sparkles/g)).toHaveLength(2)
   })
+
+  it('uses the Model Context Protocol glyph for MCP tool activity', () => {
+    const markup = renderToStaticMarkup(
+      createElement(AiReasoning, {
+        items: [
+          {
+            id: 'tool-call',
+            kind: 'tool',
+            content: 'Consultar la colección',
+            detail: 'list_my_collection · Consultando…',
+          },
+        ],
+        streaming: true,
+      }),
+    )
+
+    expect(markup).toContain('ai-reasoning-mcp-icon')
+    expect(markup).toContain('<title>Model Context Protocol</title>')
+    expect(markup).not.toContain('hn-cog')
+  })
 })

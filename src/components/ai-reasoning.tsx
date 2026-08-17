@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect, useState } from 'react'
 
 import { AiMarkdown } from '@/components/ai-markdown'
+import { ModelContextProtocol } from '@/components/model-context-protocol'
 import {
   Steps,
   StepsContent,
@@ -63,16 +64,17 @@ function ReasoningStep({
     setOpen(active)
   }, [active])
 
-  const iconClass = active
-    ? 'hn hn-refresh spinning'
-    : item.kind === 'tool'
-      ? 'hn hn-cog'
-      : 'hn hn-sparkles'
+  const icon =
+    item.kind === 'tool' ? (
+      <ModelContextProtocol className="ai-reasoning-mcp-icon" />
+    ) : (
+      <i className={active ? 'hn hn-refresh spinning' : 'hn hn-sparkles'} />
+    )
 
   return (
     <StepsItem
       className={`ai-reasoning-item ${item.kind ?? 'reasoning'}${active ? ' active' : ''}`}
-      icon={<i className={iconClass} />}
+      icon={icon}
       open={open}
       onOpenChange={setOpen}
       title={item.content}
