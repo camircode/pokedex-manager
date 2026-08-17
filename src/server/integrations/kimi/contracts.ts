@@ -8,8 +8,6 @@ export const KIMI_DEFAULT_TIMEOUT_MS = 10_000
 export const KIMI_VISION_DEFAULT_TIMEOUT_MS = 30_000
 export const KIMI_TEMPERATURE = 1
 export const KIMI_THINKING = { type: 'enabled' } as const
-// Thinking tokens are part of max_completion_tokens, so every response needs
-// enough headroom for reasoning before its visible content.
 export const KIMI_MAX_COMPLETION_TOKENS = 1_024
 export const KIMI_RESEARCH_MAX_COMPLETION_TOKENS = 2_048
 export const KIMI_INSIGHTS_MAX_COMPLETION_TOKENS = 2_048
@@ -117,6 +115,31 @@ export const kimiChatResponseSchema = z.object({
     .min(1),
 })
 
+const kimiStreamToolCallSchema = z.object({
+  index: z.number().int().nonnegative(),
+  id: z.string().max(128).optional(),
+  type: z.literal('function').optional(),
+  function: z
+    .object({
+      name: z.string().max(64).optional(),
+      arguments: z.string().max(2_000).optional(),
+    })
+    .optional(),
+})
+
+export const kimiStreamChunkSchema = z.object({
+  choices: z.array(
+    z.object({
+      finish_reason: z.string().nullable().optional(),
+      delta: z.object({
+        content: z.string().nullable().optional(),
+        reasoning_content: z.string().nullable().optional(),
+        tool_calls: z.array(kimiStreamToolCallSchema).max(10).optional(),
+      }),
+    }),
+  ),
+})
+
 const pokemonNameSchema = z
   .string()
   .trim()
@@ -159,6 +182,12 @@ export type KimiImageMediaType = z.infer<typeof imageMediaTypeSchema>
 
 export type KimiAnalyzeOptions = {
   signal?: AbortSignal
+  onReasoning?: (delta: string) => void | Promise<void>
+}
+
+export type KimiReasoningEvent = {
+  type: 'reasoning'
+  delta: string
 }
 
 type FetchImplementation = (
@@ -238,7 +267,12 @@ export type KimiToolCall = {
 
 export type KimiChatMessage =
   | { role: 'system' | 'user'; content: string }
-  | { role: 'assistant'; content: string; toolCalls?: KimiToolCall[] }
+  | {
+      role: 'assistant'
+      content: string
+      reasoningContent?: string
+      toolCalls?: KimiToolCall[]
+    }
   | {
       role: 'tool'
       content: string
@@ -258,6 +292,14 @@ export type KimiChatTool = {
 export type KimiChatCompletion = {
   finishReason: 'stop' | 'tool_calls'
   content: string
+  reasoningContent?: string
+  toolCalls: KimiToolCall[]
+}
+
+export type KimiStreamCompletion = {
+  finishReason: string
+  content: string
+  reasoningContent: string
   toolCalls: KimiToolCall[]
 }
 
