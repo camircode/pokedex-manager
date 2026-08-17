@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import { AiProcess, type AiProcessStep } from '@/components/ai-process'
+import { AiReasoning, type AiReasoningStep } from '@/components/ai-reasoning'
 import { AiMarkdown } from '@/components/ai-markdown'
 import { EmptyState, ErrorState, LoadingState } from '@/components/status'
 import { catalogSearchDefaults } from '@/lib/catalog-query'
@@ -12,7 +12,7 @@ import type { ResearchResponse } from '@/server/research'
 
 export const Route = createFileRoute('/app/research')({ component: Research })
 
-const researchSteps: AiProcessStep[] = [
+const researchSteps: AiReasoningStep[] = [
   { phase: 'collecting', label: 'Leer el estado actual de la colección' },
   { phase: 'preparing', label: 'Preparar el contexto verificable' },
   { phase: 'generating', label: 'Kimi escribe la narrativa' },
@@ -131,7 +131,7 @@ function Research() {
       {state.error && <ErrorState message={state.error} />}
       {generationError && <ErrorState message={generationError} />}
       {processStartedAt !== null && (
-        <AiProcess
+        <AiReasoning
           title="Construcción de la expedición"
           steps={researchSteps}
           phases={processPhases}

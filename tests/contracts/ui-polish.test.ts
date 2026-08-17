@@ -209,23 +209,23 @@ describe('Pokedex URL and responsive UI contracts', () => {
     )
   })
 
-  it('shows real AI process ledgers for insights, research, and recognition', () => {
+  it('shows real AI reasoning chains for insights, research, and recognition', () => {
     const insights = read('src/routes/app/insights.tsx')
     const research = read('src/routes/app/research.tsx')
     const scan = read('src/routes/app/scan.tsx')
-    const process = read('src/components/ai-process.tsx')
+    const reasoning = read('src/components/ai-reasoning.tsx')
     const styles = readStyles()
 
     for (const surface of [insights, research, scan]) {
-      expect(surface).toContain('<AiProcess')
+      expect(surface).toContain('<AiReasoning')
       expect(surface).toContain("Accept: 'text/event-stream'")
       expect(surface).toContain('consumeEventStream')
     }
-    expect(process).toContain('Proceso de IA')
-    expect(process).toContain('Procesando ahora')
-    expect(styles).toContain('@keyframes ai-process-pulse')
+    expect(reasoning).toContain('Razonamiento de IA')
+    expect(reasoning).toContain('Procesando ahora')
+    expect(styles).toContain('@keyframes ai-reasoning-pulse')
     expect(styles).toMatch(
-      /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.ai-process-steps \.active \.ai-process-marker[\s\S]*animation: none/,
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.ai-reasoning-steps \.active \.ai-reasoning-marker[\s\S]*animation: none/,
     )
   })
 
