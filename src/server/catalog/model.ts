@@ -100,7 +100,6 @@ export type PokemonRecord = {
     displayName?: string
     description?: string | null
   }>
-  catalogSprite?: string | null
   sprite: string | null
   species: string
   genus: string | null
@@ -247,7 +246,6 @@ export function normalizePokemon(
       name: entry.ability.name,
       hidden: entry.is_hidden,
     })),
-    catalogSprite: pokemon.sprites.front_default,
     sprite:
       pokemon.sprites.other?.['official-artwork'].front_default ??
       pokemon.sprites.front_default,

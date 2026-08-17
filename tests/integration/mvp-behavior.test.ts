@@ -152,7 +152,6 @@ describe('PokéAPI normalization and stale fallback', () => {
       genus: 'Pokémon Ratón',
       description: 'Almacena electricidad en las bolsas de sus mejillas.',
       generation: 'generation-i',
-      catalogSprite: 'https://img.example.test/pikachu.png',
       sprite: 'https://img.example.test/pikachu-art.png',
     })
     expect(fetcher).toHaveBeenCalledTimes(2)
