@@ -127,17 +127,7 @@ export type ResearchResponse = {
   capability: ResearchCapability
 }
 
-/** @deprecated Compatibility for clients deployed before provider reasoning streams. */
-export type ResearchActivityPhase =
-  | 'collecting'
-  | 'preparing'
-  | 'generating'
-  | 'validating'
-  | 'persisting'
-
-export type ResearchActivityEvent =
-  | KimiReasoningEvent
-  | { type: 'phase'; phase: ResearchActivityPhase }
+export type ResearchActivityEvent = KimiReasoningEvent
 
 function uniqueSorted(values: string[]) {
   return [...new Set(values)].sort((left, right) => left.localeCompare(right))

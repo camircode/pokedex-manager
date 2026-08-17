@@ -162,6 +162,7 @@ describe('Pokedex URL and responsive UI contracts', () => {
     const assistant = read('src/routes/app/assistant.tsx')
     const assistantApi = read('src/routes/api/assistant.ts')
     const assistantServer = read('src/server/assistant.ts')
+    const eventStreamResponse = read('src/server/event-stream-response.ts')
     const styles = readStyles()
     const packageJson = read('package.json')
 
@@ -171,7 +172,7 @@ describe('Pokedex URL and responsive UI contracts', () => {
     expect(assistant).toContain('<Markdown')
     expect(assistant).toContain('skipHtml')
     expect(assistant).toContain('Fuente ')
-    expect(assistant).toContain('Actividad MCP')
+    expect(assistant).toContain('Razonamiento y herramientas')
     expect(assistant).toContain('useLayoutEffect(() => {')
     expect(assistant).toContain("behavior: 'instant'")
     expect(assistant).toContain('threadEndRef.current?.scrollIntoView')
@@ -180,11 +181,15 @@ describe('Pokedex URL and responsive UI contracts', () => {
     expect(styles).not.toContain(
       'overflow-x: auto;\n  }\n  .conversation-index li',
     )
-    expect(assistantApi).toContain("'Content-Type': 'text/event-stream")
+    expect(assistantApi).toContain('createEventStreamResponse')
+    expect(eventStreamResponse).toContain(
+      "'Content-Type': 'text/event-stream; charset=utf-8'",
+    )
+    expect(eventStreamResponse).toContain(': keep-alive')
     expect(assistantServer).toContain("type: 'tool_call'")
-    expect(styles).toContain('@keyframes assistant-thinking')
+    expect(styles).toContain('@keyframes prompt-steps-spin')
     expect(styles).toMatch(
-      /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.thinking-dots span[\s\S]*animation: none/,
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.spinning[\s\S]*animation: none/,
     )
   })
 
@@ -209,23 +214,32 @@ describe('Pokedex URL and responsive UI contracts', () => {
     )
   })
 
-  it('shows real AI reasoning chains for insights, research, and recognition', () => {
+  it('renders provider reasoning with Prompt Kit Steps on every AI surface', () => {
     const insights = read('src/routes/app/insights.tsx')
     const research = read('src/routes/app/research.tsx')
     const scan = read('src/routes/app/scan.tsx')
+    const assistant = read('src/routes/app/assistant.tsx')
     const reasoning = read('src/components/ai-reasoning.tsx')
+    const promptKitSteps = read('src/components/prompt-kit/steps.tsx')
     const styles = readStyles()
 
-    for (const surface of [insights, research, scan]) {
+    for (const surface of [insights, research, scan, assistant]) {
       expect(surface).toContain('<AiReasoning')
+    }
+    for (const surface of [insights, research, scan]) {
       expect(surface).toContain("Accept: 'text/event-stream'")
       expect(surface).toContain('consumeEventStream')
+      expect(surface).toContain("event.type === 'reasoning'")
     }
-    expect(reasoning).toContain('Razonamiento de IA')
-    expect(reasoning).toContain('Procesando ahora')
-    expect(styles).toContain('@keyframes ai-reasoning-pulse')
+    expect(reasoning).toContain("from '@/components/prompt-kit/steps'")
+    expect(reasoning).toContain('Razonamiento de Kimi')
+    expect(reasoning).not.toContain('AiReasoningStep')
+    expect(promptKitSteps).toContain('export function Steps')
+    expect(promptKitSteps).toContain('export const StepsItem')
+    expect(promptKitSteps).toContain('export const StepsContent')
+    expect(styles).toContain('@keyframes prompt-steps-spin')
     expect(styles).toMatch(
-      /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.ai-reasoning-steps \.active \.ai-reasoning-marker[\s\S]*animation: none/,
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.spinning[\s\S]*animation: none/,
     )
   })
 
