@@ -42,6 +42,9 @@ const researchContextSchema = z
     }),
   })
   .nullable()
+const unavailableToolContextSchema = z.object({
+  error: z.string().min(1),
+})
 
 export type ToolAnswer = { answer: string; citations: AssistantCitation[] }
 
@@ -88,6 +91,14 @@ export function toolAnswerFromMcp(
   operation: AssistantToolOperation,
   data: unknown,
 ): ToolAnswer {
+  if (unavailableToolContextSchema.safeParse(data).success) {
+    return {
+      answer:
+        'Esta consulta de datos no pudo completarse. Ajusta los parámetros o continúa con otras herramientas y con los datos que ya verificaste.',
+      citations: [],
+    }
+  }
+
   if (operation.name === 'search_pokemon') {
     const result = catalogSearchContextSchema.parse(data)
     const citations = result.items.map((pokemon, index) =>

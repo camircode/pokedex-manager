@@ -11,13 +11,20 @@ export const productReadonlyPort: ReadonlyToolPort = {
     const collection = await getCollectionService()
     let data: unknown
     switch (operation) {
-      case 'search_pokemon':
-        data = await catalog.list({
+      case 'search_pokemon': {
+        const requestedLimit =
+          typeof input.limit === 'number' ? input.limit : 20
+        const result = await catalog.list({
           query: input.query,
-          limit: input.limit ?? 20,
+          limit: Math.max(requestedLimit, 5),
           page: 1,
         })
+        data = {
+          ...result,
+          items: result.items.slice(0, requestedLimit),
+        }
         break
+      }
       case 'get_pokemon':
       case 'resource_pokemon':
         data = await catalog.getPokemon(String(input.pokemonId))

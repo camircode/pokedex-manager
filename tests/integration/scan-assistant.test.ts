@@ -19,6 +19,7 @@ import {
 } from '../../src/server/integrations/kimi'
 import {
   createMcpToolClient,
+  McpClientError,
   type McpPrincipal,
   type ReadonlyPortInput,
   type ReadonlyToolPort,
@@ -86,10 +87,16 @@ const emptyStats = {
   recent: [],
 }
 
-function createAssistantMcp(calls: ReadonlyPortInput[] = []) {
+function createAssistantMcp(
+  calls: ReadonlyPortInput[] = [],
+  failingOperation?: ReadonlyPortInput['operation'],
+) {
   const port: ReadonlyToolPort = {
     async list(input) {
       calls.push(input)
+      if (input.operation === failingOperation) {
+        throw new Error('Fixture tool failure')
+      }
       let data: unknown
       switch (input.operation) {
         case 'search_pokemon':
@@ -368,6 +375,57 @@ describe('assistant ownership, persistence and no-key behavior', () => {
     ])
   })
 
+  it('lets Kimi recover when one MCP tool cannot complete its query', async () => {
+    const complete = vi
+      .fn<KimiChatPort['complete']>()
+      .mockResolvedValueOnce({
+        finishReason: 'tool_calls',
+        content: '',
+        toolCalls: [
+          {
+            id: 'search:0',
+            name: 'search_pokemon',
+            arguments: '{"query":"pikachu","limit":1}',
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
+        finishReason: 'stop',
+        content:
+          'No pude completar esa búsqueda, pero puedes volver a intentarlo con un nombre más específico.',
+        toolCalls: [],
+      })
+    const calls: ReadonlyPortInput[] = []
+    const service = createAssistantService(database, {
+      chat: { complete },
+      connectMcp: createAssistantMcp(calls, 'search_pokemon'),
+    })
+
+    const sent = await service.send('owner-tool-recovery', {
+      message: 'Busca Pokémon específicos que pueda agregar',
+    })
+
+    expect(sent.message.content).toMatch(/volver a intentarlo/i)
+    expect(sent.message.toolCalls).toEqual([
+      {
+        name: 'search_pokemon',
+        input: { query: 'pikachu', limit: 1 },
+      },
+    ])
+    expect(sent.message.citations).toEqual([])
+    expect(complete).toHaveBeenCalledTimes(2)
+    expect(complete.mock.calls[1]?.[0].messages).toContainEqual(
+      expect.objectContaining({
+        role: 'tool',
+        name: 'search_pokemon',
+        content: expect.stringMatching(/no pudo completarse/i),
+      }),
+    )
+    expect(calls).toContainEqual(
+      expect.objectContaining({ operation: 'search_pokemon' }),
+    )
+  })
+
   it('finishes a broad recommendation instead of exposing the tool budget', async () => {
     const complete = vi
       .fn<KimiChatPort['complete']>()
@@ -502,6 +560,31 @@ describe('assistant ownership, persistence and no-key behavior', () => {
     await expect(response.json()).resolves.toEqual({
       status: 'unavailable',
       error: 'El asistente con Kimi no está disponible en este momento.',
+    })
+  })
+
+  it('reserves the MCP unavailable response for client failures', async () => {
+    const response = await assistantHandler(
+      new Request(`${baseUrl}/api/assistant`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'Consulta mi colección' }),
+      }),
+      {
+        authenticate: async () => ({ id: 'owner-mcp-error' }),
+        service: {
+          history: vi.fn(),
+          send: vi.fn(async () => {
+            throw new McpClientError()
+          }),
+        },
+      },
+    )
+
+    expect(response.status).toBe(503)
+    await expect(response.json()).resolves.toEqual({
+      status: 'unavailable',
+      error: 'El contexto MCP no está disponible en este momento.',
     })
   })
 
