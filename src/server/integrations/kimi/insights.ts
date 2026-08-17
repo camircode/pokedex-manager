@@ -1,16 +1,14 @@
 import '@tanstack/react-start/server-only'
 
 import {
-  executeKimiRequest,
-  parseKimiChatResponse,
+  executeKimiStreamRequest,
+  parseKimiStreamChatResponse,
   validateAdapterOptions,
 } from '@/server/integrations/kimi/client'
 import {
   type InsightsProposalPort,
   insightsProposalInputSchema,
-  KIMI_INSIGHTS_MAX_COMPLETION_TOKENS,
   KIMI_MODEL,
-  KIMI_TEMPERATURE,
   KIMI_THINKING,
   KimiAdapterError,
   type KimiAdapterOptions,
@@ -33,7 +31,7 @@ export function createKimiInsightsAdapter(
       if (new Set(factKeys).size !== factKeys.length) {
         throw new KimiAdapterError('KIMI_INPUT_INVALID')
       }
-      return executeKimiRequest(
+      return executeKimiStreamRequest(
         validated,
         {
           model: KIMI_MODEL,
@@ -48,21 +46,20 @@ export function createKimiInsightsAdapter(
               ].join('\n'),
             },
           ],
-          stream: false as const,
+          stream: true as const,
           thinking: KIMI_THINKING,
-          temperature: KIMI_TEMPERATURE,
-          max_completion_tokens: KIMI_INSIGHTS_MAX_COMPLETION_TOKENS,
         },
         proposeOptions.signal,
         (payload) => {
           const parsed = kimiNarrativeSchema.safeParse(
-            parseKimiChatResponse(payload).content,
+            parseKimiStreamChatResponse(payload).content,
           )
           if (!parsed.success) {
             throw new KimiAdapterError('KIMI_RESULT_INVALID')
           }
           return parsed.data
         },
+        proposeOptions.onReasoning,
       )
     },
   }
@@ -81,6 +78,5 @@ export function createConfiguredKimiInsightsAdapter(
     apiKey: config.apiKey,
     baseUrl: options.baseUrl,
     fetch: options.fetch,
-    timeoutMs: config.timeoutMs,
   })
 }

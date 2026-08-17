@@ -369,14 +369,12 @@
     grid-template-columns: 1fr;
     gap: 0.65rem;
   }
-  .ai-reasoning-toggle {
-    align-items: flex-start;
+  .prompt-steps-trigger-copy > span:last-child {
+    display: grid;
+    gap: 0.15rem;
   }
   .ai-reasoning-state {
-    margin-left: auto;
-  }
-  .ai-reasoning-chevron {
-    margin-top: 0.25rem;
+    font-size: 0.68rem;
   }
   .insight-evidence,
   .insight-analysis > ol > li,
@@ -600,8 +598,7 @@ html:active-view-transition-type(pokemon-detail)::view-transition-new(root) {
     animation: none;
     transform: none;
   }
-  .ai-reasoning-steps .active .ai-reasoning-marker {
-    opacity: 1;
+  .spinning {
     animation: none;
     transform: none;
   }

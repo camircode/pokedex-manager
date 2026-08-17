@@ -72,6 +72,7 @@ export function createAssistantService(
     userId: string,
     input: unknown,
     report?: AssistantActivityReporter,
+    signal?: AbortSignal,
   ) {
     const parsed = assistantInputSchema.parse(input)
     const mcp = await connectMcp({ subject: userId, scopes: ['mcp:read'] })
@@ -107,6 +108,7 @@ export function createAssistantService(
           context,
           executeTool,
           report,
+          signal,
         })
         operations = generated.operations
         result = generated
