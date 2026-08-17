@@ -447,3 +447,163 @@ code {
   font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
   font-size: 0.9em;
 }
+
+/* Prompt Kit Steps reasoning stream */
+.ai-reasoning {
+  margin-bottom: 2rem;
+  padding: 1rem 0;
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid var(--line);
+}
+.prompt-steps-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 1rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: var(--muted);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: color 160ms ease-out;
+}
+.prompt-steps-trigger:hover {
+  color: var(--ink);
+}
+.prompt-steps-trigger:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
+}
+.prompt-steps-trigger-copy {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.7rem;
+}
+.prompt-steps-trigger-copy > span:last-child {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 0.7rem;
+}
+.prompt-steps-left-icon {
+  position: relative;
+  display: inline-grid;
+  flex: 0 0 auto;
+  width: 1.15rem;
+  height: 1.15rem;
+  place-items: center;
+}
+.prompt-steps-primary-icon,
+.prompt-steps-hover-icon,
+.prompt-steps-chevron {
+  width: 1rem;
+  height: 1rem;
+  transition:
+    opacity 160ms ease-out,
+    transform 160ms ease-out;
+}
+.prompt-steps-hover-icon {
+  position: absolute;
+  opacity: 0;
+}
+.prompt-steps-trigger:hover .prompt-steps-primary-icon.swappable {
+  opacity: 0;
+}
+.prompt-steps-trigger:hover .prompt-steps-hover-icon {
+  opacity: 1;
+}
+.prompt-steps-trigger[data-state="open"] .prompt-steps-hover-icon,
+.prompt-steps-trigger[data-state="open"] .prompt-steps-chevron {
+  transform: rotate(180deg);
+}
+.ai-reasoning-title {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ai-reasoning-state {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.prompt-steps-content {
+  overflow: hidden;
+}
+.prompt-steps-grid {
+  display: grid;
+  grid-template-columns: min-content minmax(0, 1fr);
+  gap: 0.9rem;
+  align-items: stretch;
+  margin-top: 1rem;
+}
+.prompt-steps-bar-slot {
+  display: flex;
+  min-width: 1.15rem;
+  justify-content: center;
+}
+.prompt-steps-bar {
+  width: 2px;
+  height: 100%;
+  background: var(--line);
+}
+.prompt-steps-items {
+  display: grid;
+  min-width: 0;
+  gap: 0.9rem;
+}
+.prompt-steps-item {
+  min-width: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+.ai-reasoning-item {
+  display: grid;
+  grid-template-columns: 1.1rem minmax(0, 1fr);
+  gap: 0.65rem;
+}
+.ai-reasoning-item-icon {
+  display: grid;
+  width: 1.1rem;
+  height: 1.1rem;
+  place-items: center;
+  color: var(--success);
+  background: var(--paper);
+}
+.ai-reasoning-item-icon svg,
+.ai-reasoning-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+.ai-reasoning-item.tool .ai-reasoning-item-icon {
+  color: var(--accent-dark);
+}
+.ai-reasoning-item.waiting .ai-reasoning-item-icon {
+  color: var(--accent);
+}
+.ai-reasoning-item-detail {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--muted);
+}
+.spinning {
+  animation: prompt-steps-spin 900ms linear infinite;
+}
+@keyframes prompt-steps-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.ai-reasoning-item .ai-markdown,
+.ai-reasoning-item .ai-markdown > :first-child,
+.ai-reasoning-item .ai-markdown > :last-child {
+  margin-block: 0;
+}
